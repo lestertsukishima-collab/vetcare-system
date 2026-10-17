@@ -1,0 +1,133 @@
+/* Shared responsive adjustments for the clinic workspace and welcome page. */
+img, svg { max-width: 100%; }
+input, select, textarea { min-width: 0; max-width: 100%; }
+:is(.fields, .rx-row, .vaccine-row) > * { min-width: 0; }
+:is(.patient-head, .patient-owner, .followup, .quick-link, .booking-summary) > :not(.icon) { min-width: 0; }
+.patient-avatar { flex: none; }
+:is(h1, h2, h3, .patient-note, .patient-owner, .followup, .quick-link, .notice, .helper, .panel-caption, .saved-message) { overflow-wrap: anywhere; }
+.topbar-left { min-width: 0; flex: 1; }
+.topbar-actions { flex: none; }
+.profile-name { min-width: 0; max-width: 160px; }
+.profile-name strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.breadcrumb { min-width: 0; }
+.breadcrumb strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.title-row > div, .record-header > div, .panel-heading > div { min-width: 0; }
+.panel-heading { flex-wrap: wrap; }
+.panel-heading .search { flex: 0 1 240px; min-width: min(100%, 160px); max-width: 100%; }
+.stat strong { font-size: clamp(1.25rem, 2.3vw, 1.875rem); overflow-wrap: anywhere; }
+.record-columns { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.record p { overflow-wrap: anywhere; }
+.scroll { max-width: 100%; overscroll-behavior-inline: contain; -webkit-overflow-scrolling: touch; }
+.scroll:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; border-radius: 5px; }
+.table-scroll-hint { margin: 8px 0 0; font-size: 11px; color: var(--muted); }
+.scroll details.editor[open] { width: min(34rem, calc(100vw - 6rem)); min-width: 0; max-width: 100%; }
+.scroll details.editor .fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.booking-summary { flex-wrap: wrap; }
+.booking-summary > div { flex: 1 1 160px; }
+.booking-summary > strong:last-child { overflow-wrap: anywhere; }
+.history-profile-heading { flex-wrap: wrap; }
+.history-profile-heading > div:nth-child(2) { min-width: 0; flex: 1 1 200px; }
+.history-profile-heading p, .history-profile h2 { overflow-wrap: anywhere; }
+.history-profile-counts { flex-wrap: wrap; }
+.vaccination-card-heading { flex-wrap: wrap; }
+.medical-timeline-footer { overflow-wrap: anywhere; }
+.command-dialog { max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); margin-block: min(10vh, 70px); }
+.command-dialog[open] { display: flex; flex-direction: column; }
+.command-heading, .command-foot { flex: none; }
+.command-heading input { min-width: 0; flex: 1; }
+.command-results { min-height: 0; overscroll-behavior: contain; }
+.command-foot { flex-wrap: wrap; }
+.toast [data-toast-message] { min-width: 0; overflow-wrap: anywhere; }
+footer { flex-wrap: wrap; overflow-wrap: anywhere; }
+.mobile-nav-heading { display: none; }
+
+@media (max-width: 1250px) {
+    .fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .rx-row, .vaccine-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 1100px) {
+    .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .notification-list { grid-template-columns: 1fr; }
+    .profile-name, .chevron { display: none; }
+}
+@media (pointer: coarse) {
+    :is(button, .button, .icon-button, .user-menu summary, .main-nav a, .quick-link, .command-results a) { min-height: 44px; }
+    :is(.icon-button, .command-trigger, .user-menu summary) { min-width: 44px; }
+    input, select, textarea, .search, .filter-bar select, .reminder-filter select, .command-heading input { font-size: 16px; }
+}
+@media (max-width: 1024px) {
+    :root { --sidebar: 0px; }
+    body.nav-open { overflow: hidden; }
+    .sidebar { width: min(290px, calc(100vw - 48px)); max-width: calc(100vw - 48px); transform: translateX(-100%); visibility: hidden; transition: transform .22s; overscroll-behavior: contain; padding-top: max(16px, env(safe-area-inset-top)); padding-bottom: max(16px, env(safe-area-inset-bottom)); padding-left: max(18px, env(safe-area-inset-left)); padding-right: 18px; }
+    .nav-open .sidebar { visibility: visible; transform: translateX(0); }
+    .nav-open .nav-backdrop { display: block; position: fixed; inset: 0; border: 0; border-radius: 0; background: #172d2366; backdrop-filter: blur(2px); z-index: 39; }
+    .mobile-menu { display: inline-grid; }
+    .mobile-nav-heading { display: flex; justify-content: space-between; align-items: center; position: sticky; top: -1px; z-index: 1; background: var(--paper); margin: -1px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--line); font-size: 12px; font-weight: 600; }
+    .topbar { height: auto; min-height: calc(72px + env(safe-area-inset-top)); padding-top: env(safe-area-inset-top); padding-left: max(14px, env(safe-area-inset-left)); padding-right: max(14px, env(safe-area-inset-right)); gap: 8px; }
+    .topbar-actions { gap: 4px; }
+    .workspace-content { padding-left: max(14px, env(safe-area-inset-left)); padding-right: max(14px, env(safe-area-inset-right)); }
+    :is(button, .button, .icon-button, .user-menu summary, .main-nav a, .quick-link, .command-results a) { min-height: 44px; }
+    :is(.icon-button, .command-trigger, .user-menu summary) { min-width: 44px; }
+    .user-menu summary { justify-content: center; }
+    input, select, textarea, .search, .filter-bar select, .reminder-filter select, .command-heading input { font-size: 16px; }
+    .key-button { min-width: 44px; }
+    .week-day { min-height: 64px; }
+    .toast { bottom: max(15px, env(safe-area-inset-bottom)); }
+    footer { padding-bottom: max(20px, env(safe-area-inset-bottom)); }
+}
+@media (max-width: 640px) {
+    .title-row { flex-wrap: wrap; }
+    .title-row > div { flex-basis: 100%; }
+    .pagination-bar { align-items: start; flex-wrap: wrap; gap: 12px; }
+    .pagination-bar > div { gap: 8px; max-width: 100%; flex-wrap: wrap; }
+    .record-header { flex-wrap: wrap; }
+    .record-header > .muted { text-align: left; }
+    .history-profile-counts { width: 100%; margin-left: 0; }
+}
+@media (max-width: 540px) {
+    .fields, .record-columns, .scroll details.editor .fields, .patient-card .editor .fields { grid-template-columns: minmax(0, 1fr); }
+    .rx-row, .vaccine-row { grid-template-columns: minmax(0, 1fr); }
+    .panel-heading .search { flex-basis: 100%; }
+    .history-search-row input { flex-basis: 100%; }
+    .history-search-row > button { margin-left: auto; }
+    .history-search-icon { top: 13px; }
+    .hero .eyebrow { letter-spacing: .9px; }
+    .history-profile-heading > div:nth-child(2) { flex-basis: 160px; }
+    .reminder-filter { width: 100%; }
+}
+@media (max-width: 360px) {
+    .topbar-left { gap: 5px; }
+    .topbar-actions { gap: 1px; }
+    .stat { padding: 12px; }
+    .stat .stat-icon { display: none; }
+    .week-strip { gap: 2px; }
+    .week-day .day-count { font-size: 8px; }
+    .history-profile-heading > .patient-avatar { display: none; }
+}
+@media (max-height: 500px) and (max-width: 1000px) {
+    .command-dialog { margin-block: 12px; max-height: calc(100dvh - 24px); }
+    .command-heading { padding-block: 8px; }
+    .command-foot { padding-block: 8px; }
+    .sidebar-note { display: none; }
+}
+/* The welcome page shares these rules after its page-specific styles. */
+.welcome-nav { flex-wrap: wrap; gap: 18px; }
+.welcome-hero { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); }
+.welcome-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.welcome-copy, .welcome-card { min-width: 0; }
+.welcome-caption { max-width: calc(100% - 28px); }
+.welcome-trust { flex-wrap: wrap; }
+@media (max-width: 760px) {
+    .welcome { padding-left: max(20px, env(safe-area-inset-left)); padding-right: max(20px, env(safe-area-inset-right)); }
+    .welcome-nav { padding-top: max(24px, env(safe-area-inset-top)); }
+    .welcome-hero, .welcome-cards { grid-template-columns: minmax(0, 1fr); }
+    .welcome h1 { font-size: clamp(34px, 8vw, 48px); letter-spacing: -1.5px; }
+    .welcome-nav .button { padding-inline: 14px; }
+    .welcome-caption { bottom: 20px; padding: 10px 12px; font-size: 10px; }
+}
+@media print {
+    .mobile-nav-heading, .table-scroll-hint { display: none !important; }
+    .scroll { overflow: visible; max-width: none; }
+    table { white-space: normal; overflow-wrap: anywhere; }
+    .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}

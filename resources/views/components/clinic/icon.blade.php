@@ -1,0 +1,26 @@
+@props(['name' => 'heart'])
+@php($paths = [
+    'dashboard'=>'M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z',
+    'pets'=>'M8 14c-2 2-4 3-3 5 1 3 4 1 7 1s6 2 7-1c1-2-1-3-3-5-2-3-6-3-8 0Z M7 7a2 3 0 1 0 0 .1 M17 7a2 3 0 1 0 0 .1 M3 12a1.5 2 0 1 0 0 .1 M21 12a1.5 2 0 1 0 0 .1',
+    'appointments'=>'M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z M16 3v4 M8 3v4 M3 11h18 M8 15h2 M14 15h2',
+    'records'=>'M9 4H6a2 2 0 0 0-2 2v14h16V6a2 2 0 0 0-2-2h-3 M9 2h6v5H9z M8 12h8 M8 16h5',
+    'prescriptions'=>'M8 3H5v18 M5 3h5a5 5 0 0 1 0 10H5 M10 13l11 8 M20 13l-7 8',
+    'vaccinations'=>'m17 3 4 4 M19 5l-3 3 M6 17l-3 4 M7 16l-3-3L14 3l7 7L11 20l-4-4Z M10 10l4 4',
+    'invoices'=>'M5 3h14v18l-3-2-4 2-4-2-3 2V3Z M9 8h6 M9 12h6 M9 16h3',
+    'owners'=>'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8 M17 4a4 4 0 0 1 0 8 M22 21v-2a4 4 0 0 0-3-4',
+    'veterinarians'=>'M6 3v5a5 5 0 0 0 10 0V3 M4 3h4 M14 3h4 M11 13v3a5 5 0 0 0 10 0v-2 M21 9a2 2 0 1 0 0 4 2 2 0 0 0 0-4',
+    'services'=>'M9 3h6v6h6v6h-6v6H9v-6H3V9h6Z',
+    'inventory'=>'m3 7 9-4 9 4v12l-9 3-9-3V7Z M3 7l9 4 9-4 M12 11v11 M8 5l9 4',
+    'transactions'=>'M4 7h15l-4-4 M20 17H5l4 4 M19 7l-4 4 M5 17l4-4',
+    'payments'=>'M3 5h18v14H3z M3 10h18 M7 15h3',
+    'users'=>'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8 M20 8v6 M17 11h6',
+    'reports'=>'M4 3v18h18 M8 16v-5 M13 16V7 M18 16v-3',
+    'settings'=>'m9 3-1 3-3 1v4l2 1v2l-2 1v4l3 1 1 2h6l1-2 3-1v-4l-2-1v-2l2-1V7l-3-1-1-3H9Z M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6',
+    'search'=>'M11 3a8 8 0 1 0 0 16 8 8 0 0 0 0-16 M17 17l5 5',
+    'arrow'=>'M4 12h16 M14 6l6 6-6 6','plus'=>'M12 5v14 M5 12h14','close'=>'m6 6 12 12 M6 18 18 6','menu'=>'M4 6h16 M4 12h16 M4 18h16',
+    'clock'=>'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18 M12 7v5l3 2',
+    'heart'=>'M20 5c-3-3-7-1-8 1-1-2-5-4-8-1-5 5 3 11 8 15 5-4 13-10 8-15Z',
+    'sun'=>'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8 M12 2v2 M12 20v2 M2 12h2 M20 12h2 M5 5l1 1 M18 18l1 1 M5 19l1-1 M18 6l1-1',
+    'logout'=>'M9 3H3v18h6 M9 12h12 M16 7l5 5-5 5','check'=>'m5 12 4 4L19 6',
+])
+<svg {{ $attributes->class(['icon']) }} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ $paths[$name] ?? $paths['heart'] }}" /></svg>
