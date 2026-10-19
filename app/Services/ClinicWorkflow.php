@@ -32,12 +32,9 @@ class ClinicWorkflow
             // Serialize bookings for the same pet and veterinarian, including different owners.
             $pet = Pet::with('owner')->lockForUpdate()->findOrFail($data['pet_id']);
             abort_unless($actor->role === 'admin' || $pet->owner->user_id === $actor->id, 403);
-            $vet = Veterinarian::with('user')->lockForUpdate()->findOrFail($data['veterinarian_id']);
-            if (! $vet->user->active || $vet->user->role !== 'veterinarian') {
-                $this->fail('veterinarian_id', 'Choose an active veterinarian.');
-            }
-            $service = Service::where('active', true)->findOrFail($data['service_id']);
-            $at = Carbon::parse($data['appointment_date']);
+            $vet = $this->bookingVeterinarian($data['veterinarian_id']);
+            $service = Service::where('active', true)->lockForUpdate()->findOrFail($data['service_id']);
+            $at = $this->clinicTime($data['appointment_date']);
             $this->ensureAvailable($pet->id, $vet->id, $at);
 
             return Appointment::create([
@@ -53,7 +50,10 @@ class ClinicWorkflow
             ->when($except !== null, fn ($q) => $q->where('id', '!=', $except))
             ->where('appointment_date', '>', $at->copy()->subMinutes(30))
             ->where('appointment_date', '<', $at->copy()->addMinutes(30))
-            ->where(fn ($q) => $q->where('veterinarian_id', $vetId)->orWhere('pet_id', $petId))->exists();
+            ->where(fn ($q) => $q->where('veterinarian_id', $vetId)->orWhere('pet_id', $petId))
+            // A locking read sees bookings committed while waiting for the pet/vet locks,
+            // even when MySQL's repeatable-read snapshot was created earlier.
+            ->lockForUpdate()->first(['id']);
         if ($conflict) {
             $this->fail('appointment_date', 'The pet or veterinarian already has a visit within 30 minutes. Choose another slot.');
         }
@@ -66,7 +66,7 @@ class ClinicWorkflow
         DB::transaction(function () use ($actor, $id, $data) {
             $visible = Appointment::visibleTo($actor)->findOrFail($id);
             Pet::whereKey($visible->pet_id)->lockForUpdate()->firstOrFail();
-            $vet = Veterinarian::with('user')->lockForUpdate()->findOrFail($data['veterinarian_id']);
+            $vet = $this->bookingVeterinarian($data['veterinarian_id']);
             $appointment = Appointment::visibleTo($actor)->lockForUpdate()->findOrFail($id);
             if (! in_array($appointment->status, ['pending', 'confirmed']) || $appointment->medicalRecord()->exists()) {
                 $this->fail('appointment_id', 'Only open appointments without a medical record can be rescheduled.');
@@ -74,10 +74,7 @@ class ClinicWorkflow
             if ($actor->role === 'owner' && $appointment->appointment_date->isPast()) {
                 $this->fail('appointment_date', 'Contact the clinic to change a past appointment.');
             }
-            if (! $vet->user->active || $vet->user->role !== 'veterinarian') {
-                $this->fail('veterinarian_id', 'Choose an active veterinarian.');
-            }
-            $at = Carbon::parse($data['appointment_date']);
+            $at = $this->clinicTime($data['appointment_date']);
             $this->ensureAvailable($appointment->pet_id, $vet->id, $at, $appointment->id);
             if ($appointment->veterinarian_id === $vet->id && $appointment->appointment_date->eq($at)) {
                 return;
@@ -174,10 +171,11 @@ class ClinicWorkflow
 
         return DB::transaction(function () use ($actor, $data) {
             $invoice = Invoice::lockForUpdate()->findOrFail($data['invoice_id']);
+            $paidAt = $this->clinicTime($data['paid_at']);
             $existing = $invoice->payments()->where('request_key', $data['request_key'])->first();
             if ($existing) {
                 if (Invoice::cents($existing->amount) !== Invoice::cents($data['amount']) || $existing->method !== $data['method'] ||
-                    ($existing->reference ?? '') !== ($data['reference'] ?? '') || ! $existing->paid_at->eq(Carbon::parse($data['paid_at']))) {
+                    ($existing->reference ?? '') !== ($data['reference'] ?? '') || ! $existing->paid_at->eq($paidAt)) {
                     $this->fail('request_key', 'This payment submission was already saved with different details. Reload the payment form.');
                 }
 
@@ -187,7 +185,7 @@ class ClinicWorkflow
                 $this->fail('amount', 'Payment exceeds the remaining invoice balance.');
             }
 
-            return $invoice->payments()->create(['amount' => $data['amount'], 'method' => $data['method'], 'reference' => $data['reference'] ?? null, 'paid_at' => $data['paid_at'], 'request_key' => $data['request_key'], 'recorded_by' => $actor->id]);
+            return $invoice->payments()->create(['amount' => $data['amount'], 'method' => $data['method'], 'reference' => $data['reference'] ?? null, 'paid_at' => $paidAt, 'request_key' => $data['request_key'], 'recorded_by' => $actor->id]);
         });
     }
 
@@ -205,5 +203,25 @@ class ClinicWorkflow
             $medicine->update(['quantity' => $balance]);
             InventoryTransaction::create(['medicine_id' => $id, 'user_id' => $actor->id, 'quantity_change' => $change, 'balance_after' => $balance, 'type' => $change > 0 ? 'received' : 'adjustment', 'notes' => $data['notes']]);
         });
+    }
+
+    private function clinicTime(string $value): Carbon
+    {
+        // SQL datetime columns store clinic-local time with second precision.
+        return Carbon::parse($value)->setTimezone(config('app.timezone'))->startOfSecond();
+    }
+
+    private function bookingVeterinarian(int|string $id): Veterinarian
+    {
+        $reference = Veterinarian::findOrFail($id);
+        // Match account edits/deletions: lock the user before the profile. Reading
+        // an eager-loaded user here could reuse an older repeatable-read snapshot.
+        $account = User::whereKey($reference->user_id)->lockForUpdate()->firstOrFail();
+        $vet = Veterinarian::whereKey($id)->lockForUpdate()->firstOrFail();
+        if (! $account->active || $account->role !== 'veterinarian') {
+            $this->fail('veterinarian_id', 'Choose an active veterinarian.');
+        }
+
+        return $vet;
     }
 }

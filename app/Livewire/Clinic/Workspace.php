@@ -4,6 +4,7 @@ namespace App\Livewire\Clinic;
 
 use App\Models\User;
 use App\Services\ClinicAccess;
+use App\Services\ClinicDeletion;
 use App\Services\ClinicWorkflow;
 use App\Services\PatientHistory;
 use App\Services\VaccinationSchedule;
@@ -80,6 +81,15 @@ class Workspace extends Component
         validator(['status' => $status], ['status' => ['required', Rule::in(['confirmed', 'cancelled'])]])->validate();
         app(ClinicWorkflow::class)->status($user, $id, $status);
         $this->dispatch('clinic-toast', message: $status === 'confirmed' ? 'Appointment confirmed.' : 'Appointment cancelled.');
+    }
+
+    public function deleteRecord(int $id): void
+    {
+        $this->resetValidation();
+        app(ClinicDeletion::class)->delete($this->actor(), $this->section, $id);
+        $this->resetPage();
+        $this->dispatch('clinic-saved');
+        $this->dispatch('clinic-toast', message: 'Deleted successfully.');
     }
 
     private function actor(): User

@@ -115,7 +115,7 @@ footer { flex-wrap: wrap; overflow-wrap: anywhere; }
 .welcome-hero { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); }
 .welcome-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .welcome-copy, .welcome-card { min-width: 0; }
-.welcome-caption { max-width: calc(100% - 28px); }
+.welcome-caption { max-width: 100%; }
 .welcome-trust { flex-wrap: wrap; }
 @media (max-width: 760px) {
     .welcome { padding-left: max(20px, env(safe-area-inset-left)); padding-right: max(20px, env(safe-area-inset-right)); }
@@ -123,7 +123,7 @@ footer { flex-wrap: wrap; overflow-wrap: anywhere; }
     .welcome-hero, .welcome-cards { grid-template-columns: minmax(0, 1fr); }
     .welcome h1 { font-size: clamp(34px, 8vw, 48px); letter-spacing: -1.5px; }
     .welcome-nav .button { padding-inline: 14px; }
-    .welcome-caption { bottom: 20px; padding: 10px 12px; font-size: 10px; }
+    .welcome-caption { padding: 10px 12px; font-size: 10px; }
 }
 @media print {
     .mobile-nav-heading, .table-scroll-hint { display: none !important; }

@@ -52,6 +52,12 @@ The fifth migration applies the supplied core-field specification: pet weight (k
 
 ## Verification
 
+The session-authenticated JSON API is available at `/api/v1`. See [API.md](API.md) for endpoints, role scopes, CSRF requirements, filters, and examples.
+
+Email sign-in and uniqueness are case insensitive across registration, account/profile editing, initial admin creation, and password resets. New and edited addresses are stored in lowercase; existing mixed-case addresses remain usable. The configured `clinic` authentication provider supplies the same lookup behavior for sessions and password resets. If deploying with cached configuration, rebuild the configuration cache after updating.
+
+Pet, people, service, and medicine directories include confirmed delete actions. Owners can delete their own unused pets; admins can delete unused non-admin accounts, services, and empty medicine entries. Linked clinical, appointment, billing, and stock history prevents deletion and displays a reason. Deactivate used accounts/catalog entries or cancel open appointments to retain their history. New medicines with zero opening stock do not create a stock movement; positive opening quantities are recorded in the ledger. API clients can use DELETE with the same rules, and PUT/PATCH on owner/veterinarian profile IDs to edit their accounts.
+
 Run `php artisan test`. Clinic tests cover ownership isolation, staff permissions, normalized profiles, scheduling conflicts, appointment changes, atomic medical records and stock movements, prescription-only items, prescription/vaccination visibility, invoice amounts, payment retries, overpayment rejection, role transitions, last-admin protection, inactive accounts, full patient history for assigned veterinarians, multiple vaccinations, follow-up supersession, malformed inputs, form input isolation, historical labels, migrations, and page rendering. A complete lifecycle test exercises all three roles and writes to all 14 requested tables.
 
 The local `.tools/php` directory, when present, contains a downloaded development runtime used for verification. It is ignored by Git and is not part of the application deployment.

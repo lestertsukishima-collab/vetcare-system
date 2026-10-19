@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\ClinicAccess;
 use App\Services\ClinicCommands;
+use App\Services\ClinicDeletion;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -38,5 +39,12 @@ class WorkspaceController extends Controller
         $redirect = $commands->update($request->user(), $section, $id, $request->all());
 
         return $redirect ? redirect($redirect)->with('success', 'Account updated. Your workspace now follows your new role.') : back()->with('success', 'Updated successfully.');
+    }
+
+    public function destroy(Request $request, string $section, int $id, ClinicDeletion $deletion): RedirectResponse
+    {
+        $deletion->delete($request->user(), $section, $id);
+
+        return back()->with('success', 'Deleted successfully.');
     }
 }

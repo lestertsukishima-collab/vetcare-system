@@ -9,6 +9,7 @@ use App\Actions\Fortify\ResetUserPassword;
 use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
@@ -34,9 +35,9 @@ class FortifyServiceProvider extends ServiceProvider
         $this->configureViews();
         $this->configureRateLimiting();
         Fortify::authenticateUsing(function (Request $request): ?User {
-            $user = User::where('email', $request->string('email')->toString())->where('active', true)->first();
+            $user = Auth::guard('web')->getProvider()->retrieveByCredentials(['email' => $request->string('email')->toString(), 'active' => true]);
 
-            return $user && Hash::check($request->string('password')->toString(), $user->password) ? $user : null;
+            return $user instanceof User && Hash::check($request->string('password')->toString(), $user->password) ? $user : null;
         });
     }
 

@@ -2,15 +2,46 @@
 
 The supplied role descriptions, relationship diagram, 14-table list, and five detailed field lists define the requirements. The implementation and automated checks cover them as follows.
 
-Verification status updated October 18, 2026:
+Verification status updated October 19, 2026:
 
-- Full Laravel test suite: 114 passed, 865 assertions.
+- Full Laravel test suite: 141 passed, 1,243 assertions.
 - PHPStan: passed with zero errors; PHP formatting completed.
 - Frontend production build, clinic JavaScript syntax check, and clinic CSS parsing: passed.
 - Livewire workspace, shared command handlers, reactive forms, filters, pagination, and workflow regressions: passed.
 - Browser inventory exposed no browser for an interactive walkthrough; viewport screenshots and visual browser verification remain unavailable.
 - MySQL migration status: all migrations applied, including the requested patient and clinical field changes.
 - Live MySQL schema: all 14 requested domain tables and all requested columns in the five supplied tables verified. Read-only integrity checks found zero mismatched clinical/vaccination references, incorrect invoice totals, stock-ledger mismatches, overpaid invoices, or completed visits missing medical records/invoices.
+- Isolated MySQL transaction and lifecycle review: 11 checks passed, including repeatable-read booking conflicts, account/catalog deactivation, dispensing, prescription-only stock, vaccinations, invoicing, payment retries/final balances, and deletion guards. Temporary databases were removed after the checks.
+- Current outgoing mail transport is `log`; actual email delivery is not configured or verified. Verification and reset notifications were tested with fake delivery.
+
+## API, CRUD, and overall workflow audit — October 19, 2026
+
+Reviewed shared commands, HTTP/API controllers and middleware, Livewire forms/directories, authentication and account changes, model relationships, migrations, scheduling transactions, clinical completion, prescription and vaccine history, stock movements, invoices/payments, reminders, and history-preserving deletion. Reproduced the following gaps before fixing them:
+
+| Gap | Fix and evidence |
+| --- | --- |
+| UTC/offset appointments were saved with the source clock time, shifting visits and conflict checks | Convert booking and reschedule timestamps to clinic-local time before comparison/storage; test equivalent UTC and +08:00 slots |
+| UTC/fractional-second payment retries could fail against second-precision stored receipts | Normalize the timestamp once for both comparison and storage; identical/equivalent retries retain one receipt |
+| Mixed-case addresses entered by admins, the CLI, or profile settings could fail login; case variants could bypass SQLite uniqueness | Normalize email on writes; use a shared case-insensitive uniqueness rule and credential provider, including legacy addresses and password reset lookup |
+| MySQL repeatable-read snapshots could miss a booking committed while waiting for locks, or reuse an inactive vet/service | Use current locking reads for conflicts, lock accounts before veterinarian profiles, and lock the active service; three isolated MySQL scenarios failed before the fix and passed after |
+| API create responses omitted IDs needed to chain workflow steps | POST returns `data` with the correctly scoped resource and ID, including separate owner/vet profile IDs; complete API workflow verifies creation through full payment |
+
+`WorkflowReviewTest` adds 12 regressions. Alongside the full suite, they verify real session login/logout with CSRF-protected API writes, denied DELETE without a token, two-factor access boundaries, per-user rate limiting, rollback after one medicine has already been dispensed, API prescription/vaccine reads, account creation/login, duplicate email rejection, legacy password resets, timezone normalization, and complete invoice settlement. Existing tests cover last-admin protection, open-vet assignments, ownership isolation, role/profile retention, malformed input, deletion of unused records, immutable history, reminders/search, factories, and legacy migration preservation.
+
+The read-only configured MySQL audit found zero failures across 14 integrity checks: 21 foreign-key relationships; clinical/vaccine reference consistency; record/completion states; missing completed-visit records/invoices; invoice totals and overpayment; stock totals and running balances; case-insensitive email duplicates; missing owner/vet profiles; and open appointments without an active veterinarian. All migrations are applied. Configured clinic rows were preserved; write scenarios ran in SQLite memory databases or a newly created isolated MySQL database.
+
+Reproduce the supplemental database checks with:
+
+```powershell
+.\.tools\php\php.exe tests/Integration/clinic-integrity-review.php
+.\.tools\php\php.exe tests/Integration/mysql-workflow-review.php
+```
+
+The first script only reads the configured database and outputs aggregate counts. The second requires a MySQL connection with permission to create/drop a temporary database; it creates a random `vetcare_review_` database, runs migrations and disposable fixtures there, then closes its connections and removes that database in `finally`. It does not modify clinic rows. These standalone checks are separate from the default SQLite PHPUnit suite.
+
+Final validation: 141 Laravel tests with 1,243 assertions, 4 JavaScript interaction tests, 11 isolated MySQL checks, PHPStan with zero errors, PHP formatting, production asset build, clinic JavaScript syntax, clinic CSS parsing, Blade compilation, and Git whitespace checks. The build reports an optional font-fallback package notice; it completes successfully. Browser inventory contained no browser, so visual layout and interactive browser walkthroughs remain unverified. Email is currently written to logs; configure a delivery transport before relying on emailed verification/reset links.
+
+The sections below retain the verification history from earlier features.
 
 | Requirement | Implementation and verification |
 | --- | --- |

@@ -9,6 +9,9 @@ use App\Models\Owner;
 use App\Models\Pet;
 use App\Models\Service;
 use App\Models\User;
+use App\Models\Veterinarian;
+use App\Rules\UniqueEmail;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -19,10 +22,11 @@ class ClinicCommands
     use ClinicalRowValidationRules;
 
     /** @param array<string, mixed> $input */
-    public function store(User $user, string $section, array $input): void
+    public function store(User $user, string $section, array $input): ?Model
     {
         app(ClinicAccess::class)->authorize($user, $section);
         $workflow = app(ClinicWorkflow::class);
+        $created = null;
         switch ($section) {
             case 'pets':
                 abort_unless(in_array($user->role, ['admin', 'owner']), 403);
@@ -34,12 +38,12 @@ class ClinicCommands
                         throw ValidationException::withMessages(['owner_id' => 'Choose an active pet owner account.']);
                     }
                 }
-                Pet::create($data);
+                $created = Pet::create($data);
                 break;
             case 'appointments':
                 abort_unless(in_array($user->role, ['admin', 'owner']), 403);
                 $booking = $this->validate($input, ['pet_id' => 'bail|required|integer|min:1|exists:pets,id', 'veterinarian_id' => 'bail|required|integer|min:1|exists:veterinarians,id', 'service_id' => 'bail|required|integer|min:1|exists:services,id', 'appointment_date' => 'required|date|after:now', 'reason' => 'required|string|max:5000']);
-                $workflow->book($user, ['pet_id' => $booking['pet_id'], 'veterinarian_id' => $booking['veterinarian_id'], 'service_id' => $booking['service_id'], 'appointment_date' => $booking['appointment_date'], 'reason' => $booking['reason']]);
+                $created = $workflow->book($user, ['pet_id' => $booking['pet_id'], 'veterinarian_id' => $booking['veterinarian_id'], 'service_id' => $booking['service_id'], 'appointment_date' => $booking['appointment_date'], 'reason' => $booking['reason']]);
                 break;
             case 'records':
                 abort_unless($user->role === 'veterinarian', 403);
@@ -54,21 +58,25 @@ class ClinicCommands
                     'vaccinations.*.next_due_date' => 'nullable|date|after:vaccinations.*.date_given',
                     'vaccinations.*.batch_number' => 'nullable|string|max:100',
                 ]);
-                $workflow->examine($user, ['appointment_id' => $data['appointment_id'], 'symptoms' => $data['symptoms'], 'diagnosis' => $data['diagnosis'], 'treatment' => $data['treatment']] + $data);
+                $created = $workflow->examine($user, ['appointment_id' => $data['appointment_id'], 'symptoms' => $data['symptoms'], 'diagnosis' => $data['diagnosis'], 'treatment' => $data['treatment']] + $data);
                 break;
             case 'services':
-                Service::create($this->validate($input, $this->serviceRules()));
+                $created = Service::create($this->validate($input, $this->serviceRules()));
                 break;
             case 'inventory':
                 $data = $this->validate($input, $this->medicineRules() + ['quantity' => 'required|integer|min:0|max:1000000']);
-                DB::transaction(function () use ($user, $data) {
+                $created = DB::transaction(function () use ($user, $data) {
                     $m = Medicine::create($data);
-                    InventoryTransaction::create(['medicine_id' => $m->id, 'user_id' => $user->id, 'quantity_change' => $m->quantity, 'balance_after' => $m->quantity, 'type' => 'opening', 'notes' => 'Initial stock']);
+                    if ($m->quantity > 0) {
+                        InventoryTransaction::create(['medicine_id' => $m->id, 'user_id' => $user->id, 'quantity_change' => $m->quantity, 'balance_after' => $m->quantity, 'type' => 'opening', 'notes' => 'Initial stock']);
+                    }
+
+                    return $m;
                 });
                 break;
             case 'owners': case 'veterinarians': case 'users':
-                $data = $this->validate($input, ['name' => 'required|string|max:100', 'email' => 'required|email|max:255|unique:users,email', 'password' => 'required|string|min:12|max:255', 'role' => ['required', Rule::in(['admin', 'owner', 'veterinarian'])], 'phone' => 'nullable|string|max:50', 'address' => 'nullable|string|max:1000', 'license_number' => 'nullable|string|max:100|unique:veterinarians,license_number', 'specialization' => 'nullable|string|max:100']);
-                DB::transaction(function () use ($data, $section) {
+                $data = $this->validate($input, ['name' => 'required|string|max:100', 'email' => ['required', 'email', 'max:255', new UniqueEmail], 'password' => 'required|string|min:12|max:255', 'role' => ['required', Rule::in(['admin', 'owner', 'veterinarian'])], 'phone' => 'nullable|string|max:50', 'address' => 'nullable|string|max:1000', 'license_number' => 'nullable|string|max:100|unique:veterinarians,license_number', 'specialization' => 'nullable|string|max:100']);
+                $created = DB::transaction(function () use ($data, $section) {
                     $u = new User(['name' => $data['name'], 'email' => $data['email'], 'password' => $data['password']]);
                     $u->role = match ($section) {
                         'owners' => 'owner', 'veterinarians' => 'veterinarian', default => $data['role']
@@ -81,15 +89,21 @@ class ClinicCommands
                     if ($u->role === 'veterinarian') {
                         $u->veterinarian()->firstOrFail()->update(['license_number' => $data['license_number'] ?? null, 'specialization' => $data['specialization'] ?? null]);
                     }
+
+                    return match ($section) {
+                        'owners' => $u->owner()->firstOrFail(),
+                        'veterinarians' => $u->veterinarian()->firstOrFail(),
+                        default => $u,
+                    };
                 });
                 break;
             case 'invoices':
                 abort_unless($user->role === 'admin', 403);
-                $workflow->invoice((int) $this->validate($input, ['appointment_id' => 'bail|required|integer|min:1|exists:appointments,id'])['appointment_id']);
+                $created = $workflow->invoice((int) $this->validate($input, ['appointment_id' => 'bail|required|integer|min:1|exists:appointments,id'])['appointment_id']);
                 break;
             case 'payments':
                 $payment = $this->validate($input, ['invoice_id' => 'bail|required|integer|min:1|exists:invoices,id', 'amount' => 'required|numeric|decimal:0,2|min:0.01|max:99999999.99', 'method' => ['required', Rule::in(['cash', 'bank_transfer', 'card'])], 'reference' => 'nullable|string|max:255|required_unless:method,cash', 'paid_at' => 'required|date|before_or_equal:now', 'request_key' => 'required|string|uuid']);
-                $workflow->payment($user, ['invoice_id' => $payment['invoice_id'], 'amount' => $payment['amount'], 'method' => $payment['method'], 'paid_at' => $payment['paid_at'], 'request_key' => $payment['request_key']] + $payment);
+                $created = $workflow->payment($user, ['invoice_id' => $payment['invoice_id'], 'amount' => $payment['amount'], 'method' => $payment['method'], 'paid_at' => $payment['paid_at'], 'request_key' => $payment['request_key']] + $payment);
                 break;
             case 'settings':
                 $data = $this->validate($input, ['name' => 'required|string|max:100', 'phone' => 'nullable|string|max:50', 'address' => 'nullable|string|max:1000']);
@@ -98,6 +112,7 @@ class ClinicCommands
             default: abort(404);
         }
 
+        return $created;
     }
 
     /** @param array<string, mixed> $input */
@@ -106,6 +121,13 @@ class ClinicCommands
         app(ClinicAccess::class)->authorize($user, $section);
         $workflow = app(ClinicWorkflow::class);
         switch ($section) {
+            case 'owners':
+            case 'veterinarians':
+                $role = $section === 'owners' ? 'owner' : 'veterinarian';
+                $profile = ($section === 'owners' ? Owner::query() : Veterinarian::query())
+                    ->whereHas('user', fn ($q) => $q->where('role', $role))->findOrFail($id);
+
+                return $this->update($user, 'users', $profile->user_id, array_replace($input, ['role' => $role]));
             case 'appointments':
                 if (($input['operation'] ?? null) === 'reschedule') {
                     $schedule = $this->validate($input, ['veterinarian_id' => 'bail|required|integer|min:1|exists:veterinarians,id', 'appointment_date' => 'required|date|after:now']);
@@ -133,7 +155,7 @@ class ClinicCommands
                 } break;
             case 'users':
                 $target = User::findOrFail($id);
-                $data = $this->validate($input, ['name' => 'required|string|max:100', 'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($target->id)], 'active' => 'required|boolean', 'role' => ['sometimes', 'string', Rule::in(['admin', 'veterinarian', 'owner'])], 'phone' => 'nullable|string|max:50', 'address' => 'nullable|string|max:1000', 'license_number' => ['nullable', 'string', 'max:100', Rule::unique('veterinarians', 'license_number')->ignore($target->veterinarian?->id)], 'specialization' => 'nullable|string|max:100']);
+                $data = $this->validate($input, ['name' => 'required|string|max:100', 'email' => ['required', 'email', 'max:255', new UniqueEmail($target->id)], 'active' => 'required|boolean', 'role' => ['sometimes', 'string', Rule::in(['admin', 'veterinarian', 'owner'])], 'phone' => 'nullable|string|max:50', 'address' => 'nullable|string|max:1000', 'license_number' => ['nullable', 'string', 'max:100', Rule::unique('veterinarians', 'license_number')->ignore($target->veterinarian?->id)], 'specialization' => 'nullable|string|max:100']);
                 $updated = app(ClinicAccounts::class)->update($user, $target, ['name' => $data['name'], 'email' => $data['email'], 'active' => $data['active']] + $data);
                 if ($target->id === $user->id && $updated->role !== 'admin') {
                     return route('dashboard');
