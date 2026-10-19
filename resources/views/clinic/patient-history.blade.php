@@ -44,7 +44,7 @@
                 </article>
             </li>
         @empty
-            <li class="empty"><span class="empty-art"><x-clinic.icon name="records" /></span><strong>{{ $search ? 'No matching history.' : 'No medical history yet.' }}</strong>{{ $search ? 'Try a diagnosis, treatment, medicine, vaccine, or date.' : 'Completed examinations and recorded vaccinations will appear here.' }}@if($search)<br><button type="button" class="small secondary" wire:click="clearFilters">Clear search</button>@endif</li>
+            <li class="empty"><span class="empty-art"><x-clinic.icon name="records" /></span><strong>{{ $search ? 'No matching history.' : 'No medical history yet.' }}</strong>{{ $search ? 'Try a diagnosis, treatment, medicine, vaccine, or date.' : 'Completed examinations and recorded vaccinations will appear here.' }}@if($search)<br><button type="button" class="small secondary btn btn-outline-secondary btn-sm" wire:click="clearFilters">Clear search</button>@endif</li>
         @endforelse
     </ol>
 </section>

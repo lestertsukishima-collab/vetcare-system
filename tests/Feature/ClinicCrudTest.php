@@ -136,7 +136,7 @@ class ClinicCrudTest extends TestCase
         $pet = Pet::factory()->create();
         $owner = $pet->owner->user;
         Livewire::actingAs($owner)->test(Workspace::class, ['section' => 'pets'])
-            ->assertSeeHtml('wire:confirm=')->call('deleteRecord', $pet->id)
+            ->assertSeeHtml('data-bs-target="#clinic-delete-modal"')->call('deleteRecord', $pet->id)
             ->assertHasNoErrors()->assertDispatched('clinic-saved')->assertDispatched('clinic-toast')->assertDontSee($pet->name);
         $this->assertModelMissing($pet);
         $visit = Appointment::factory()->create(['pet_id' => Pet::factory()->create(['owner_id' => $owner->owner->id])->id]);

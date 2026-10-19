@@ -2,7 +2,7 @@
     @if($section === 'pets')
         @include('clinic.pet-fields', ['pet' => null])
     @elseif($section === 'appointments')
-        <label>Veterinarian<select name="veterinarian_id" wire:model="data.veterinarian_id" required>@foreach($vets as $v)<option value="{{ $v->id }}">{{ $v->user->name }}</option>@endforeach</select></label>
+        <label>Veterinarian<select class="form-select @error('veterinarian_id') is-invalid @enderror" name="veterinarian_id" wire:model="data.veterinarian_id" required>@foreach($vets as $v)<option value="{{ $v->id }}">{{ $v->user->name }}</option>@endforeach</select></label>
         <x-clinic.field name="appointment_date" label="New visit date & time" type="datetime-local" :min="now()->format('Y-m-d\TH:i')" required />
         <p class="wide helper">Changing the visit returns it to pending confirmation. The booked service fee stays the same.</p>
     @elseif($section === 'users')
@@ -25,5 +25,5 @@
         <x-clinic.field name="expires_at" label="Expiry date" type="date" required />
         <x-clinic.select name="active" label="Status" :options="[1=>'Active',0=>'Inactive']" required />
     @endif
-    <div class="wide form-actions"><button wire:loading.attr="disabled" wire:target="save">{{ $variant === 'stock' ? 'Post stock change' : 'Save changes' }}</button><span class="helper">Changes are saved securely to your clinic.</span></div>
+    <div class="wide form-actions"><button class="btn btn-primary" wire:loading.attr="disabled" wire:target="save">{{ $variant === 'stock' ? 'Post stock change' : 'Save changes' }}</button><span class="helper">Changes are saved securely to your clinic.</span></div>
 </x-clinic.form>

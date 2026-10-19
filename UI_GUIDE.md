@@ -2,6 +2,18 @@
 
 The clinic workspace uses a shared sage and forest palette, self-hosted Instrument Sans fonts, responsive navigation, patient cards, and light/dark themes. The welcome page and authentication screens use the same visual direction. Account settings retain the existing Flux components with the updated brand and accent colors.
 
+## Bootstrap integration
+
+Bootstrap 5.3.8 is installed through npm with Popper and Sass. Vite builds `resources/scss/clinic-bootstrap.scss` and `resources/js/clinic-bootstrap.js`; the workspace loads these assets locally. Run `npm install` and `npm run build` when deploying or changing the assets.
+
+Vite Plus and its Vite core alias are pinned to 0.3.3, with an npm override keeping plugin imports on the same core. Update those versions together when upgrading the build tools.
+
+The workspace uses Bootstrap's responsive dashboard grid, form controls and validation states, scrolling tables, buttons, alerts, spinners, tooltips, toast notifications, and delete confirmation modal. Colors follow VetCare's existing light/dark theme. Component styles are scoped beneath `.vetcare-bootstrap`, and Bootstrap Reboot is excluded so Flux and Tailwind authentication screens keep their existing styles.
+
+Deletion requires an explicit confirmation before calling the existing Livewire `deleteRecord` action. Duplicate submissions are blocked while the request is pending. Backend permissions and clinic-history retention rules still apply. Notification text is rendered as plain text, and Bootstrap pauses toast dismissal while the user interacts with it. Tooltips support hover and keyboard focus. Livewire navigation disposes overlays and tooltip instances; morph hooks refresh dynamic controls.
+
+Keep future Bootstrap styles in the scoped Sass entry and import only the plugins needed in the workspace. Run `npm run test:ui` for interaction tests covering confirmation/cancellation, duplicate deletion protection, notification handling, overlay cleanup, navigation, table accessibility, and email verification. These tests use browser API fixtures; screenshots and real browser layout testing remain unverified because no connected browser was available.
+
 ## Livewire interactions
 
 - Main clinic links use `wire:navigate`. The overview refreshes every 60 seconds while visible.
@@ -63,4 +75,4 @@ Forms, prescription/vaccine repeaters, patient profiles, cards, pagination, and 
 
 Wide tables, including reports and prescription tables, scroll within their panels. A hint appears only when horizontal scrolling is needed. Overflowing regions receive keyboard focus and an accessible label. ResizeObserver and Livewire's `morphed` hook update this behavior after resizing, filtering, expanding editors, and replacing table content. Inline table editors scale to the viewport. The welcome, sign-in/registration, and account settings layouts also have responsive width guards.
 
-Run `npm run test:ui` for four JavaScript interaction regressions covering navigation focus/Escape, desktop resizing and Livewire navigation, table hints/keyboard access, and observer cleanup after table replacement. These tests use a browser API fixture; they do not emulate CSS layout. CSS parsing, production builds, Blade compilation, and the Laravel suite also pass. The connected browser inventory was empty, so screenshots and real-device viewport testing remain unverified.
+Run `npm run test:ui` for JavaScript interaction regressions covering navigation focus/Escape, desktop resizing and Livewire navigation, table hints/keyboard access, and observer cleanup after table replacement, alongside the Bootstrap and email verification checks described above. These tests use browser API fixtures; they do not emulate CSS layout. The connected browser inventory was empty, so screenshots and real-device viewport testing remain unverified.

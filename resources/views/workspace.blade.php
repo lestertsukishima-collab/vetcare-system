@@ -5,13 +5,15 @@
     <meta name="theme-color" content="#244e43">
     <title>{{ ucfirst($section) }} · VetCare</title>
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
+    @vite(['resources/scss/clinic-bootstrap.scss', 'resources/js/clinic-bootstrap.js'])
     <link rel="stylesheet" href="{{ asset('clinic.css') }}?v={{ filemtime(public_path('clinic.css')) }}" data-navigate-track>
     <link rel="stylesheet" href="{{ asset('clinic-responsive.css') }}?v={{ filemtime(public_path('clinic-responsive.css')) }}" data-navigate-track>
     @livewireStyles
     <script data-navigate-once>try{let a=localStorage.getItem('flux.appearance')||localStorage.getItem('vetcare-theme')||'light';document.documentElement.dataset.theme=a==='system'?(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):a}catch{}</script>
     <script src="{{ asset('clinic.js') }}?v={{ filemtime(public_path('clinic.js')) }}" defer data-navigate-once></script>
+    @include('partials.email-verification')
 </head>
-<body>
+<body class="vetcare-bootstrap">
 @php
     $role = auth()->user()->role;
     $links = ['dashboard'=>'Overview','pets'=>$role === 'owner' ? 'My pets' : 'Patients','appointments'=>'Appointments','records'=>'Medical records','prescriptions'=>'Prescriptions','vaccinations'=>'Vaccinations'];
@@ -39,8 +41,8 @@
     <header class="topbar">
         <div class="topbar-left"><button type="button" class="icon-button mobile-menu" aria-label="Open navigation" aria-expanded="false" aria-controls="clinic-navigation" data-nav-toggle><x-clinic.icon name="menu" /></button><div class="breadcrumb"><span>Workspace</span><span class="breadcrumb-slash">/</span><strong>{{ $links[$section] }}</strong></div></div>
         <div class="topbar-actions">
-            <button class="command-trigger" type="button" aria-label="Open quick navigation" data-command-open><x-clinic.icon name="search" /><span>Quick navigation</span><kbd>Ctrl K</kbd></button>
-            <button type="button" class="icon-button" data-theme-toggle aria-label="Toggle color theme"><x-clinic.icon name="sun" /></button>
+            <button class="command-trigger" type="button" aria-label="Open quick navigation" data-command-open data-bs-toggle="tooltip" data-bs-title="Quick navigation (Ctrl K)"><x-clinic.icon name="search" /><span>Quick navigation</span><kbd>Ctrl K</kbd></button>
+            <button type="button" class="icon-button" data-theme-toggle aria-label="Toggle color theme" data-bs-toggle="tooltip" data-bs-title="Switch color theme"><x-clinic.icon name="sun" /></button>
             <details class="user-menu"><summary aria-label="Account menu"><span class="avatar">{{ auth()->user()->initials() }}</span><span class="profile-name"><strong>{{ auth()->user()->name }}</strong><span>{{ $role === 'owner' ? 'Pet Owner' : ucfirst($role) }}</span></span><span class="chevron">⌄</span></summary><div class="user-dropdown"><a href="{{ route('profile.edit') }}" wire:navigate><x-clinic.icon name="settings" />Account settings</a><form method="POST" action="{{ route('logout') }}">@csrf<button type="submit"><x-clinic.icon name="logout" />Sign out</button></form></div></details>
         </div>
     </header>
@@ -48,7 +50,8 @@
     <footer><span><span class="footer-dot"></span> VetCare · Thoughtfully connected care.</span><span>{{ now()->format('Y') }} · {{ config('app.timezone') }}</span></footer>
 </main>
 <dialog class="command-dialog" data-command-dialog aria-labelledby="command-title"><div class="command-heading"><x-clinic.icon name="search" /><label id="command-title" class="sr-only" for="command-search">Find a page</label><input id="command-search" type="search" placeholder="Where would you like to go?" autocomplete="off" data-command-search><button type="button" class="key-button" data-command-close>Esc</button></div><div class="command-results">@foreach($links as $key => $label)<a href="{{ $key === 'dashboard' ? route('dashboard') : route('clinic.index',$key) }}" wire:navigate data-command-link><x-clinic.icon :name="$key" /><span>{{ $label }}</span><x-clinic.icon name="arrow" /></a>@endforeach<p class="empty" data-command-empty hidden>No matching pages.</p></div><div class="command-foot">Find your way to better care.<span>Enter to open</span></div></dialog>
-<div class="toast" role="status" aria-live="polite" data-toast hidden><span class="toast-icon"><x-clinic.icon name="check" /></span><span data-toast-message></span><button type="button" class="icon-button" aria-label="Dismiss notification" data-toast-close><x-clinic.icon name="close" /></button></div>
+<x-clinic.delete-modal />
+<div class="toast" role="status" aria-live="polite" aria-atomic="true" data-toast><span class="toast-icon"><x-clinic.icon name="check" /></span><span data-toast-message></span><button type="button" class="icon-button" aria-label="Dismiss notification" data-bs-dismiss="toast"><x-clinic.icon name="close" /></button></div>
 @livewireScripts
 </body>
 </html>

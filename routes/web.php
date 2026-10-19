@@ -1,9 +1,14 @@
 <?php
 
+use App\Http\Controllers\EmailVerificationStatusController;
 use App\Http\Controllers\WorkspaceController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => auth()->check() ? redirect()->route('dashboard') : view('clinic-welcome'))->name('home');
+
+Route::get('email/verification-status', EmailVerificationStatusController::class)
+    ->middleware(['auth', 'throttle:60,1'])
+    ->name('verification.status');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [WorkspaceController::class, 'index'])->name('dashboard');

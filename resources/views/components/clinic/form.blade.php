@@ -6,7 +6,7 @@
     {{ $slot }}
     @if($reactive)
         <div class="wide form-feedback" aria-live="polite">
-            <span wire:loading wire:target="save"><span class="spinner"></span> Saving your changes…</span>
+            <span wire:loading wire:target="save"><span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Saving your changes…</span>
         </div>
     @endif
 </form>

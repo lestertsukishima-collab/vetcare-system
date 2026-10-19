@@ -9,6 +9,8 @@ export default defineConfig({
             input: [
                 'resources/css/app.css',
                 'resources/js/app.js',
+                'resources/scss/clinic-bootstrap.scss',
+                'resources/js/clinic-bootstrap.js',
                 /* @chisel-passkeys */
                 'resources/js/passkeys.js',
                 /* @end-chisel-passkeys */
@@ -22,6 +24,11 @@ export default defineConfig({
         }),
         tailwindcss(),
     ]),
+    css: {
+        preprocessorOptions: {
+            scss: { quietDeps: true, silenceDeprecations: ['import'] },
+        },
+    },
     server: {
         cors: true,
         watch: {

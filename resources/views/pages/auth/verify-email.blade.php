@@ -1,7 +1,17 @@
 <x-layouts::auth :title="__('Email verification')">
-    <div class="mt-4 flex flex-col gap-6">
+    <div
+        class="mt-4 flex flex-col gap-6"
+        data-email-verification
+        data-user-id="{{ auth()->id() }}"
+        data-status-url="{{ route('verification.status', absolute: false) }}"
+        data-redirect-url="{{ route('dashboard', absolute: false) }}"
+    >
         <flux:text class="text-center">
             {{ __('Please verify your email address by clicking on the link we just emailed to you.') }}
+        </flux:text>
+
+        <flux:text class="text-center">
+            {{ __('Keep this tab open. It will continue to your dashboard automatically after verification.') }}
         </flux:text>
 
         @if (session('status') == 'verification-link-sent')

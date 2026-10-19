@@ -1,8 +1,8 @@
 <div class="hero"><div class="hero-copy"><div class="eyebrow"><span class="status-dot"></span> A LITTLE MORE CONNECTED. A LOT MORE CARE.</div><h2>A good day for<br>great care.</h2><p>{{ $role === 'owner' ? 'A little peace of mind for you. A healthier, happier life for every companion.' : 'A clear view of your day, so you can focus on the companions who need you.' }}</p><a class="link" href="{{ route('clinic.index','appointments') }}" wire:navigate>Let’s look at your schedule <x-clinic.icon name="arrow" /></a></div><x-clinic.care-art class="hero-art" /></div>
 @include('clinic.dashboard-alerts')
-<div class="stats">
+<div class="clinic-stats row row-cols-1 row-cols-sm-2 row-cols-xl-4 g-3">
     @foreach([['Registered pets',$pets->count(),'pets','Companions in your care'],['Upcoming visits',$upcoming->count(),'appointments','Pending & confirmed visits'],['Completed visits',$appointments->where('status','completed')->count(),'heart','Care delivered, all time'],['Vaccinations due',$due->count(),'vaccinations','Within 30 days or overdue']] as [$label,$count,$icon,$caption])
-        <div class="stat"><div class="stat-top"><span class="muted">{{ $label }}</span><span class="stat-icon"><x-clinic.icon :name="$icon" /></span></div><strong>{{ $count }}</strong><small>{{ $caption }}</small></div>
+        <div class="col"><div class="stat"><div class="stat-top"><span class="muted">{{ $label }}</span><span class="stat-icon"><x-clinic.icon :name="$icon" /></span></div><strong>{{ $count }}</strong><small>{{ $caption }}</small></div></div>
     @endforeach
 </div>
 <div class="dashboard-grid"><div>

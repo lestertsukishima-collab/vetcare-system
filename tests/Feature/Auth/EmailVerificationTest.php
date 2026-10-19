@@ -28,6 +28,48 @@ class EmailVerificationTest extends TestCase
         $response = $this->actingAs($user)->get(route('verification.notice'));
 
         $response->assertOk();
+        $response->assertSee('data-email-verification', escape: false);
+        $response->assertSee(route('verification.status', absolute: false));
+    }
+
+    public function test_verification_status_requires_authentication(): void
+    {
+        $this->getJson(route('verification.status'))->assertUnauthorized();
+    }
+
+    public function test_verification_status_reports_when_another_tab_verifies_the_user(): void
+    {
+        $user = User::factory()->unverified()->create();
+
+        $this->actingAs($user)->getJson(route('verification.status'))
+            ->assertOk()
+            ->assertExactJson(['user_id' => (string) $user->id, 'verified' => false]);
+
+        $verificationUrl = URL::temporarySignedRoute(
+            'verification.verify',
+            now()->addMinutes(60),
+            ['id' => $user->id, 'hash' => sha1($user->email)],
+        );
+
+        $this->get($verificationUrl)->assertRedirect();
+
+        $this->getJson(route('verification.status'))
+            ->assertOk()
+            ->assertExactJson(['user_id' => (string) $user->id, 'verified' => true])
+            ->assertHeader('Cache-Control', 'no-store, private');
+    }
+
+    public function test_verified_landing_page_signals_the_waiting_tab(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->get(route('dashboard', ['verified' => 1]))
+            ->assertOk()
+            ->assertSee('name="email-verification-complete" content="'.$user->id.'"', escape: false);
+
+        $this->get(route('dashboard'))
+            ->assertOk()
+            ->assertDontSee('name="email-verification-complete"', escape: false);
     }
 
     public function test_unverified_users_are_redirected_to_the_email_verification_prompt(): void

@@ -1,7 +1,6 @@
 (() => {
     if (window.vetcareUI) return;
     window.vetcareUI = true;
-    let toastTimer;
     let commandOpener;
     let navFocusFrame;
     const $ = selector => document.querySelector(selector);
@@ -139,7 +138,6 @@
         }
         if (target.matches('[data-theme-toggle]')) theme();
         if (target.matches('[data-print]')) window.print();
-        if (target.matches('[data-toast-close]')) $('[data-toast]').hidden = true;
         const anchor = event.target.closest('a[href]');
         if (anchor?.hash === '#create' && anchor.pathname === location.pathname) {
             const form = $('#create');
@@ -181,14 +179,6 @@
                 links[0]?.click();
             }
         }
-    });
-    window.addEventListener('clinic-toast', event => {
-        const toast = $('[data-toast]');
-        if (!toast) return;
-        $('[data-toast-message]').textContent = event.detail.message;
-        toast.hidden = false;
-        clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => { toast.hidden = true; }, 5000);
     });
     const initialize = () => {
         nav(false, { restoreFocus: false });

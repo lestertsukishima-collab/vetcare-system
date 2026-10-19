@@ -6,7 +6,7 @@
         </div>
         <label class="reminder-filter">
             <span>Reminder status</span>
-            <select wire:model.live="status">
+            <select class="form-select @error('status') is-invalid @enderror" wire:model.live="status">
                 <option value="">All reminders</option>
                 <option value="due_soon">Due within 30 days</option>
                 <option value="due_today">Due today</option>

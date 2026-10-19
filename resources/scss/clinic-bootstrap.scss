@@ -1,0 +1,92 @@
+@use 'sass:map';
+@import 'bootstrap/scss/functions';
+
+$primary: #2b6652;
+$danger: #aa5049;
+$font-family-sans-serif: Instrument, 'Segoe UI', system-ui, sans-serif;
+$font-size-base: .875rem;
+$border-radius: .6rem;
+$border-radius-lg: 1rem;
+$enable-dark-mode: false;
+$enable-negative-margins: false;
+$enable-validation-icons: false;
+$input-focus-border-color: #6c9b7c;
+$input-focus-box-shadow: 0 0 0 .2rem rgba($primary, .15);
+
+@import 'bootstrap/scss/variables';
+@import 'bootstrap/scss/variables-dark';
+@import 'bootstrap/scss/maps';
+@import 'bootstrap/scss/mixins';
+@import 'bootstrap/scss/utilities';
+@import 'bootstrap/scss/root';
+
+// Scope component styles to the clinic workspace. Flux authentication keeps its
+// own Tailwind styles, and Bootstrap Reboot does not reset the existing UI.
+.vetcare-bootstrap {
+    --bs-body-color: var(--ink);
+    --bs-body-bg: var(--paper);
+    --bs-border-color: var(--line);
+    --bs-secondary-color: var(--muted);
+    --bs-emphasis-color: var(--ink);
+    --bs-secondary-bg: var(--soft);
+    --bs-tertiary-bg: var(--soft);
+
+    @import 'bootstrap/scss/grid';
+    @import 'bootstrap/scss/tables';
+    @import 'bootstrap/scss/forms';
+    @import 'bootstrap/scss/buttons';
+    @import 'bootstrap/scss/transitions';
+    @import 'bootstrap/scss/alert';
+    @import 'bootstrap/scss/close';
+    @import 'bootstrap/scss/modal';
+    @import 'bootstrap/scss/toasts';
+    @import 'bootstrap/scss/tooltip';
+    @import 'bootstrap/scss/spinners';
+
+    $utilities: (
+        'align': map.get($utilities, 'align'),
+        'display': map.get($utilities, 'display'),
+        'gap': map.get($utilities, 'gap'),
+    );
+    @import 'bootstrap/scss/utilities/api';
+
+    .clinic-stats { margin-bottom: 22px; }
+    .clinic-stats .stat { height: 100%; }
+    .table { --bs-table-bg: transparent; --bs-table-color: var(--ink); --bs-table-hover-color: var(--ink); --bs-table-hover-bg: var(--soft); margin-bottom: 0; }
+    .table > :not(caption) > * > * { padding: 14px 12px; }
+    .table th { color: var(--muted); background: var(--soft); }
+    .form-control, .form-select { min-width: 0; font-size: 13px; line-height: 1.5; }
+    .form-control::placeholder { color: var(--muted); opacity: .8; }
+    .form-control:disabled, .form-select:disabled { color: var(--muted); background-color: var(--soft); }
+    .form-control.is-invalid, .form-select.is-invalid { border-color: var(--danger); }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 12px; font-weight: 550; }
+    .btn-primary { --bs-btn-bg: var(--green); --bs-btn-border-color: var(--green); --bs-btn-color: var(--paper); --bs-btn-hover-bg: var(--green-hover); --bs-btn-hover-border-color: var(--green-hover); --bs-btn-hover-color: var(--paper); }
+    .btn-outline-secondary { --bs-btn-color: var(--ink); --bs-btn-border-color: var(--line); --bs-btn-hover-bg: var(--soft); --bs-btn-hover-color: var(--ink); --bs-btn-hover-border-color: var(--green); }
+    .alert { font-size: 12px; border-radius: 10px; }
+    .alert-success { color: var(--ink); background: var(--soft); border-color: var(--line); }
+    .alert-danger { color: var(--danger); background: var(--paper); border-color: var(--danger); }
+    .alert .btn-close, .modal .btn-close { opacity: .65; }
+    .modal { --bs-modal-bg: var(--paper); --bs-modal-color: var(--ink); --bs-modal-border-color: var(--line); --bs-modal-header-border-color: var(--line); --bs-modal-footer-border-color: var(--line); }
+    .modal-title { margin: 0; font-size: 20px; }
+    .modal-body { font-size: 13px; line-height: 1.8; }
+    .modal-body p { margin: 0 0 12px; }
+    .modal-record-name { overflow-wrap: anywhere; }
+    .modal-footer { max-width: none; margin: 0; padding: 16px; }
+    .toast { --bs-toast-bg: var(--paper); --bs-toast-color: var(--ink); --bs-toast-border-color: var(--line); width: fit-content; }
+    .toast [data-toast-message] { min-width: 0; overflow-wrap: anywhere; }
+    .tooltip { --bs-tooltip-bg: var(--ink); --bs-tooltip-color: var(--paper); --bs-tooltip-font-size: 12px; }
+    .btn-close { flex-shrink: 0; }
+    .spinner-border-sm { width: 14px; height: 14px; border-width: 2px; }
+
+    @media (max-width: 760px) {
+        .form-control, .form-select { font-size: 16px; min-height: 44px; }
+        .btn { min-height: 44px; }
+        .table > :not(caption) > * > * { padding: 12px 10px; }
+    }
+    @media (prefers-reduced-motion: reduce) { .spinner-border { animation-duration: 1.5s; } }
+}
+
+.vetcare-bootstrap.modal-open { overflow: hidden; }
+:root[data-theme='dark'] .vetcare-bootstrap .btn-close { filter: invert(1) grayscale(100%) brightness(200%); }
+:root[data-theme='dark'] .vetcare-bootstrap .form-select { --bs-form-select-bg-img: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%239cafa2' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e"); }
+@media print { .vetcare-bootstrap .modal, .vetcare-bootstrap .modal-backdrop, .vetcare-bootstrap .tooltip { display: none !important; } }
