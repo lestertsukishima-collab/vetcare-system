@@ -35,7 +35,8 @@
         @endforeach
     </nav>
     <div class="sidebar-note"><span class="note-icon"><x-clinic.icon name="heart" /></span><strong>A little care.<br>A lifetime of difference.</strong><span>Every companion matters.</span></div>
-    <a class="sidebar-account" href="{{ route('profile.edit') }}" wire:navigate><x-clinic.icon name="settings" /> Account settings <x-clinic.icon name="arrow" /></a>
+    {{-- Account settings use the Flux layout; a full load keeps the two layouts' styles separate. --}}
+    <a class="sidebar-account" href="{{ route('profile.edit') }}"><x-clinic.icon name="settings" /> Account settings <x-clinic.icon name="arrow" /></a>
 </aside>
 <main class="workspace" id="main-content">
     <header class="topbar">
@@ -43,7 +44,8 @@
         <div class="topbar-actions">
             <button class="command-trigger" type="button" aria-label="Open quick navigation" data-command-open data-bs-toggle="tooltip" data-bs-title="Quick navigation (Ctrl K)"><x-clinic.icon name="search" /><span>Quick navigation</span><kbd>Ctrl K</kbd></button>
             <button type="button" class="icon-button" data-theme-toggle aria-label="Toggle color theme" data-bs-toggle="tooltip" data-bs-title="Switch color theme"><x-clinic.icon name="sun" /></button>
-            <details class="user-menu"><summary aria-label="Account menu"><span class="avatar">{{ auth()->user()->initials() }}</span><span class="profile-name"><strong>{{ auth()->user()->name }}</strong><span>{{ $role === 'owner' ? 'Pet Owner' : ucfirst($role) }}</span></span><span class="chevron">⌄</span></summary><div class="user-dropdown"><a href="{{ route('profile.edit') }}" wire:navigate><x-clinic.icon name="settings" />Account settings</a><form method="POST" action="{{ route('logout') }}">@csrf<button type="submit"><x-clinic.icon name="logout" />Sign out</button></form></div></details>
+            <button type="button" class="icon-button" data-workspace-refresh aria-label="Refresh workspace" aria-busy="false" data-bs-toggle="tooltip" data-bs-title="Refresh workspace"><x-clinic.icon name="refresh" /></button>
+            <details class="user-menu"><summary aria-label="Account menu"><span class="avatar">{{ auth()->user()->initials() }}</span><span class="profile-name"><strong>{{ auth()->user()->name }}</strong><span>{{ $role === 'owner' ? 'Pet Owner' : ucfirst($role) }}</span></span><span class="chevron">⌄</span></summary><div class="user-dropdown"><a href="{{ route('profile.edit') }}"><x-clinic.icon name="settings" />Account settings</a><form method="POST" action="{{ route('logout') }}">@csrf<button type="submit"><x-clinic.icon name="logout" />Sign out</button></form></div></details>
         </div>
     </header>
     <livewire:clinic.workspace :section="$section" />

@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\DB;
 
 class WorkspaceData
 {
+    public const PER_PAGE = 6;
+
     /** @return array<string, mixed> */
     public function formFor(User $user, string $section): array
     {
@@ -48,23 +50,23 @@ class WorkspaceData
     public function for(User $user, string $section): array
     {
         app(ClinicAccess::class)->authorize($user, $section);
-        $appointments = Appointment::visibleTo($user)->with(['pet.owner.user', 'veterinarian.user', 'service', 'medicalRecord.prescription.items.medicine', 'medicalRecord.vaccinations', 'invoice'])->orderByDesc('appointment_date')->get();
-        $history = Appointment::clinicalHistoryVisibleTo($user)->whereHas('medicalRecord')->with(['pet.owner.user', 'veterinarian.user', 'service', 'medicalRecord.prescription.items.medicine', 'medicalRecord.vaccinations'])->orderByDesc('appointment_date')->get();
+        $appointments = Appointment::visibleTo($user)->with(['pet.owner.user', 'veterinarian.user', 'service', 'medicalRecord.prescription.items.medicine', 'medicalRecord.vaccinations', 'invoice'])->orderByDesc('appointment_date')->orderByDesc('id')->get();
+        $history = Appointment::clinicalHistoryVisibleTo($user)->whereHas('medicalRecord')->with(['pet.owner.user', 'veterinarian.user', 'service', 'medicalRecord.prescription.items.medicine', 'medicalRecord.vaccinations'])->orderByDesc('appointment_date')->orderByDesc('id')->get();
         $latestVaccinations = app(VaccinationSchedule::class)->latest($history);
-        $medicines = $user->role !== 'owner' ? Medicine::orderBy('name')->get() : collect();
+        $medicines = $user->role !== 'owner' ? Medicine::orderBy('name')->orderBy('id')->get() : collect();
         $pets = Pet::with('owner.user')->when($user->role === 'owner', fn ($q) => $q->whereHas('owner', fn ($q) => $q->where('user_id', $user->id)))
-            ->when($user->role === 'veterinarian', fn ($q) => $q->whereIn('id', Appointment::visibleTo($user)->where('status', '!=', 'cancelled')->select('pet_id')))->orderBy('name')->get();
-        $invoices = in_array($user->role, ['admin', 'owner']) ? Invoice::with(['appointment.pet', 'payments.recorder'])->whereIn('appointment_id', Appointment::visibleTo($user)->select('id'))->latest()->get() : collect();
+            ->when($user->role === 'veterinarian', fn ($q) => $q->whereIn('id', Appointment::visibleTo($user)->where('status', '!=', 'cancelled')->select('pet_id')))->orderBy('name')->orderBy('id')->get();
+        $invoices = in_array($user->role, ['admin', 'owner']) ? Invoice::with(['appointment.pet', 'payments.recorder'])->whereIn('appointment_id', Appointment::visibleTo($user)->select('id'))->latest()->orderByDesc('id')->get() : collect();
 
         return [
             'section' => $section, 'appointments' => $appointments, 'history' => $history, 'latestVaccinations' => $latestVaccinations, 'pets' => $pets, 'invoices' => $invoices,
-            'vets' => Veterinarian::with('user')->whereHas('user', fn ($q) => $q->where('role', 'veterinarian'))->get(), 'services' => Service::orderBy('name')->get(),
+            'vets' => Veterinarian::with('user')->whereHas('user', fn ($q) => $q->where('role', 'veterinarian'))->orderBy('id')->get(), 'services' => Service::orderBy('name')->orderBy('id')->get(),
             'medicines' => $medicines,
             'dashboardAlerts' => app(DashboardAlerts::class)->summary($user, $appointments, $latestVaccinations, $medicines),
-            'owners' => $user->role === 'admin' ? Owner::with('user')->whereHas('user', fn ($q) => $q->where('role', 'owner'))->get() : collect(),
-            'users' => $user->role === 'admin' ? User::with(['owner', 'veterinarian'])->orderBy('name')->get() : collect(),
-            'transactions' => $section === 'transactions' ? InventoryTransaction::with(['medicine', 'user'])->latest('id')->paginate(30) : null,
-            'payments' => $section === 'payments' ? Payment::with(['invoice.appointment.pet', 'recorder'])->latest()->paginate(30) : null,
+            'owners' => $user->role === 'admin' ? Owner::with('user')->whereHas('user', fn ($q) => $q->where('role', 'owner'))->orderBy('id')->get() : collect(),
+            'users' => $user->role === 'admin' ? User::with(['owner', 'veterinarian'])->orderBy('name')->orderBy('id')->get() : collect(),
+            'transactions' => $section === 'transactions' ? InventoryTransaction::with(['medicine', 'user'])->latest('id')->paginate(self::PER_PAGE) : null,
+            'payments' => $section === 'payments' ? Payment::with(['invoice.appointment.pet', 'recorder'])->latest()->orderByDesc('id')->paginate(self::PER_PAGE) : null,
             'clinic' => DB::table('clinic_settings')->first(),
         ];
     }

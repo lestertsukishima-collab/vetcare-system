@@ -46,7 +46,8 @@ class ClinicLivewireTest extends TestCase
         $this->account()->owner->pets()->create(['name' => 'Private companion', 'species' => 'Cat', 'sex' => 'Unknown']);
         Livewire::actingAs($owner)->test(Workspace::class, ['section' => 'pets'])
             ->assertSee('Companion 01')->assertDontSee('Companion 15')->assertDontSee('Private companion')
-            ->call('nextPage')->assertSee('Companion 15')->assertDontSee('Companion 01')
+            ->call('nextPage')->assertSee('Companion 07')->assertSee('Companion 12')->assertDontSee('Companion 15')->assertDontSee('Companion 01')
+            ->call('nextPage')->assertSee('Companion 15')->assertDontSee('Companion 07')
             ->set('search', 'Companion 01')->assertSet('paginators.page', 1)->assertSee('Companion 01')->assertDontSee('Companion 02')
             ->set('search', 'Private companion')->assertDontSee('Private companion')->assertSee('No companions found.')
             ->call('clearFilters')->assertSet('search', '')->assertSee('Companion 01');

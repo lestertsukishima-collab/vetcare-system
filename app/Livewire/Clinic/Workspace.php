@@ -48,7 +48,7 @@ class Workspace extends Component
             $this->reset('search', 'status', 'date');
         }
         if (in_array($property, ['search', 'status', 'date', 'patient'])) {
-            $this->resetPage();
+            $this->resetListPages();
         }
     }
 
@@ -68,7 +68,7 @@ class Workspace extends Component
     public function clearFilters(): void
     {
         $this->reset('search', 'status', 'date');
-        $this->resetPage();
+        $this->resetListPages();
     }
 
     #[On('clinic-saved')]
@@ -87,7 +87,7 @@ class Workspace extends Component
     {
         $this->resetValidation();
         app(ClinicDeletion::class)->delete($this->actor(), $this->section, $id);
-        $this->resetPage();
+        $this->resetListPages();
         $this->dispatch('clinic-saved');
         $this->dispatch('clinic-toast', message: 'Deleted successfully.');
     }
@@ -95,6 +95,33 @@ class Workspace extends Component
     private function actor(): User
     {
         return User::findOrFail(auth()->id());
+    }
+
+    private function resetListPages(): void
+    {
+        foreach (array_unique(['page', ...array_keys($this->paginators)]) as $pageName) {
+            $this->resetPage($pageName);
+        }
+    }
+
+    /**
+     * Paginate heterogeneous view rows (models or patient timeline events).
+     *
+     * @param  Collection<array-key, mixed>  $rows
+     * @return LengthAwarePaginator<array-key, mixed>
+     */
+    private function paginateRows(Collection $rows, string $pageName = 'page'): LengthAwarePaginator
+    {
+        $requestedPage = (int) $this->getPage($pageName);
+        $lastPage = max(1, (int) ceil($rows->count() / WorkspaceData::PER_PAGE));
+        $page = max(1, min($requestedPage, $lastPage));
+        if ($page !== $requestedPage) {
+            $this->setPage($page, $pageName);
+        }
+
+        return new LengthAwarePaginator($rows->forPage($page, WorkspaceData::PER_PAGE), $rows->count(), WorkspaceData::PER_PAGE, $page, [
+            'path' => request()->url(), 'pageName' => $pageName,
+        ]);
     }
 
     public function render(): View
@@ -113,11 +140,19 @@ class Workspace extends Component
         $data['vaccinationFollowUps'] = $data['latestVaccinations']->filter(fn ($row) => $search->matchesVaccination($row['appointment'], $row['vaccination'], $needle) && ($this->section !== 'vaccinations' || $vaccinations->matchesStatus($row['vaccination'], $this->status)));
         $data['filteredVaccinationIds'] = $data['vaccinationFollowUps']->pluck('vaccination.id')->all();
         $matchingRecords = $data['vaccinationFollowUps']->pluck('vaccination.medical_record_id')->all();
+        if ($this->section === 'vaccinations') {
+            $data['vaccinationPagination'] = $this->paginateRows($data['vaccinationFollowUps']->values(), 'vaccinationsPage');
+            $data['vaccinationFollowUpPage'] = collect($data['vaccinationPagination']->items());
+        }
         $filterVaccinationStatus = $data['vaccinationStatusFiltered'];
         $data['selectedPatient'] = null;
         if ($this->section === 'records') {
             $matchingPetIds = $data['history']->filter(fn ($visit) => $search->matches('records', $visit, $needle))->pluck('pet_id')->all();
             $data['historyPatients'] = $data['pets']->filter(fn ($pet) => $search->matches('pets', $pet, $needle) || in_array($pet->id, $matchingPetIds));
+            if ($this->patient === '') {
+                $data['historyPatientPagination'] = $this->paginateRows($data['historyPatients']->values(), 'patientsPage');
+                $data['historyPatientPage'] = collect($data['historyPatientPagination']->items());
+            }
             if ($this->patient !== '') {
                 abort_unless(preg_match('/^[1-9][0-9]{0,17}$/', $this->patient) === 1, 404);
                 $data['selectedPatient'] = $data['pets']->firstWhere('id', (int) $this->patient);
@@ -129,7 +164,7 @@ class Workspace extends Component
                 $data['patientVaccinationCount'] = $visits->sum(fn ($visit) => $visit->medicalRecord->vaccinations->count());
                 $events = $patientHistory->timeline($visits)->filter(fn ($event) => $search->matchesHistoryEvent($event['appointment'], $event['vaccination'], $needle))->values();
                 $data['totalResults'] = $events->count();
-                $data['pagination'] = new LengthAwarePaginator($events->forPage($this->getPage(), 12), $events->count(), 12, $this->getPage(), ['path' => request()->url()]);
+                $data['pagination'] = $this->paginateRows($events);
                 $data['patientTimeline'] = collect($data['pagination']->items());
 
                 return view('livewire.clinic.workspace', $data);
@@ -185,7 +220,7 @@ class Workspace extends Component
             }
             $data['totalResults'] = $rows->count();
             // Clinical vaccine reminders always use the complete scoped history.
-            $data['pagination'] = new LengthAwarePaginator($rows->forPage($this->getPage(), 12), $rows->count(), 12, $this->getPage(), ['path' => request()->url()]);
+            $data['pagination'] = $this->paginateRows($rows);
             $data[$key] = new Collection($data['pagination']->items());
         }
 

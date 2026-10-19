@@ -16,9 +16,12 @@ Keep future Bootstrap styles in the scoped Sass entry and import only the plugin
 
 ## Livewire interactions
 
+The owner journey is: register and verify email, add a pet, and book a pending appointment. An administrator or the assigned veterinarian confirms the visit. The assigned veterinarian records the examination findings, diagnosis, and treatment, optionally adding a prescription, vaccinations, or both. Saving the examination completes the appointment automatically. The owner can then open the pet's updated medical history, prescriptions, and vaccination records. `OwnerJourneyTest` verifies self-registration through owner-visible results for both confirmation roles and for prescription-only and vaccination-only visits.
+
 - Main clinic links use `wire:navigate`. The overview refreshes every 60 seconds while visible.
+- The topbar's **Refresh workspace** button updates the current section without reloading the page. `resources/js/clinic-events.js` uses `addEventListener` for clicks, reconnection, and navigation; its `async` refresh function uses `await` for the existing Livewire server action. It shows loading and result feedback, prevents overlapping refreshes, and ignores stale completions after navigation. Reconnection refreshes the current workspace automatically.
 - Search runs on the server after a 300 ms debounce and retains the current user’s access scope. Appointment status/date filters and inventory filters work without full reloads. Search and filters are reflected in the URL.
-- Directories and histories show 12 entries per page. Stock and payment ledgers retain 30 entries per page with Livewire pagination.
+- Directories, appointment lists, medical histories, stock transactions, and payments show six records per page with Livewire pagination: 1–6, 7–12, 13–18, 19–24, and so on. Patient search cards and vaccination follow-ups have independent six-record pagination. Search and filter changes reset the relevant pages; dashboard totals continue to use all permitted records.
 - Creation, editing, rescheduling, stock adjustments, and payment forms submit through Livewire, display validation errors, retain failed input, and refresh the workspace after saving.
 - Prescription and vaccine rows use Livewire actions and stable keys. Removing a row retains the remaining entries.
 - Booking shows the selected service fee immediately. Final booking still checks availability and snapshots the fee on the server.
@@ -34,6 +37,8 @@ The theme button stores its choice locally and shares the Flux appearance prefer
 ## Assets and verification
 
 Clinic styles are in `public/clinic.css` and `public/clinic-responsive.css`; JavaScript is in `public/clinic.js`. All use cache-busted URLs. The authentication and settings styles use the existing Vite build. Font assets are local under `public/fonts`.
+
+Account settings links and links back to the clinic workspace use full page navigation because these layouts have separate stylesheets. This lets the browser load the correct styles before painting and clears the previous layout's global styles. Navigation within the clinic and between settings tabs still uses Livewire. `SettingsNavigationTest` covers these layout boundaries.
 
 `ClinicLivewireTest` covers search/pagination, ownership checks, status transitions, booking conflicts, rescheduling, repeatable clinical rows, atomic completion, duplicate payment protection, filter behavior, permissions after role changes, history pagination, and administrator forms. Existing lifecycle, security, migration, and schema tests also run against the redesigned pages.
 
@@ -61,7 +66,7 @@ Open **Medical records** and search by pet name, breed, owner, diagnosis, treatm
 
 The profile shows the pet's breed, sex, calculated age, owner, birth date, weight, color, patient notes, and visit/vaccine counts. Age uses the clinic's date, with months or days for younger pets and an explicit unknown state when the birth date is missing.
 
-The timeline runs newest first and combines clinical visits with vaccination events. Visits show diagnosis, treatment, symptoms, notes, and prescription details with the original medicine labels and supplied quantities. Vaccines appear on their administration dates, even when recorded at a later visit, with next-due dates, batches, and current/historical dose status. Twelve events appear per page; searching filters the complete timeline before pagination. Clearing search retains the selected patient and restores all their events.
+The timeline runs newest first and combines clinical visits with vaccination events. Visits show diagnosis, treatment, symptoms, notes, and prescription details with the original medicine labels and supplied quantities. Vaccines appear on their administration dates, even when recorded at a later visit, with next-due dates, batches, and current/historical dose status. Six events appear per page; searching filters the complete timeline before pagination. Clearing search retains the selected patient and restores all their events.
 
 **View medical history** on patient cards and **Medical history** on appointments open the patient's timeline directly. **Record examination** also carries the patient context, so veterinarians can review prior history beside the examination workflow. The selected patient and search are stored in the URL.
 

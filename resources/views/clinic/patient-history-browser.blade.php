@@ -15,7 +15,7 @@
     <span class="loading-state" wire:loading.delay wire:target="search,patient,selectPatient,clearPatient"><span class="spinner-border spinner-border-sm" aria-hidden="true"></span>Updating medical history…</span>
     @unless($selectedPatient)
         <div class="history-patient-list" aria-live="polite">
-            @forelse($historyPatients->take(6) as $historyPet)
+            @forelse($historyPatientPage as $historyPet)
                 <button type="button" class="history-patient-choice" wire:click="selectPatient('{{ $historyPet->id }}')" wire:loading.attr="disabled" wire:key="history-patient-{{ $historyPet->id }}" aria-label="Open {{ $historyPet->name }}'s medical history, patient {{ $historyPet->id }}">
                     <span class="patient-avatar"><x-clinic.icon name="pets" /></span>
                     <span><strong>{{ $historyPet->name }}</strong><span>{{ $historyPet->breed ?: $historyPet->species }} · {{ $historyPet->sex }}</span><small>{{ $historyPet->owner->user->name }} · Patient #{{ $historyPet->id }}</small></span>
@@ -25,6 +25,7 @@
                 <p class="empty wide">{{ $search ? 'No matching patients. Try another pet name or clinical detail.' : 'No patients available. Registered or assigned patients will appear here.' }}</p>
             @endforelse
         </div>
+        @include('clinic.pagination', ['paginator' => $historyPatientPagination, 'label' => 'Patient results pagination'])
         @if($historyPatients->count() > 6)
             <label class="history-patient-picker">{{ $historyPatients->count() }} matching patients. Choose any patient:
                 <select class="form-select @error('patient') is-invalid @enderror" wire:model.live="patient"><option value="">Select a patient</option>@foreach($historyPatients as $historyPet)<option value="{{ $historyPet->id }}">{{ $historyPet->name }} · {{ $historyPet->breed ?: $historyPet->species }} · {{ $historyPet->owner->user->name }} · #{{ $historyPet->id }}</option>@endforeach</select>

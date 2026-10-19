@@ -56,6 +56,8 @@ $input-focus-box-shadow: 0 0 0 .2rem rgba($primary, .15);
     .table > :not(caption) > * > * { padding: 14px 12px; }
     .table th { color: var(--muted); background: var(--soft); }
     .form-control, .form-select { min-width: 0; font-size: 13px; line-height: 1.5; }
+    .history-search-row .form-control { padding-inline-start: 42px; }
+    .history-search-icon { display: grid; place-items: center; width: 18px; height: 18px; }
     .form-control::placeholder { color: var(--muted); opacity: .8; }
     .form-control:disabled, .form-select:disabled { color: var(--muted); background-color: var(--soft); }
     .form-control.is-invalid, .form-select.is-invalid { border-color: var(--danger); }
@@ -77,13 +79,17 @@ $input-focus-box-shadow: 0 0 0 .2rem rgba($primary, .15);
     .tooltip { --bs-tooltip-bg: var(--ink); --bs-tooltip-color: var(--paper); --bs-tooltip-font-size: 12px; }
     .btn-close { flex-shrink: 0; }
     .spinner-border-sm { width: 14px; height: 14px; border-width: 2px; }
+    [data-workspace-refresh].is-refreshing .icon { animation: spin 1s linear infinite; }
 
     @media (max-width: 760px) {
         .form-control, .form-select { font-size: 16px; min-height: 44px; }
         .btn { min-height: 44px; }
         .table > :not(caption) > * > * { padding: 12px 10px; }
     }
-    @media (prefers-reduced-motion: reduce) { .spinner-border { animation-duration: 1.5s; } }
+    @media (prefers-reduced-motion: reduce) {
+        .spinner-border { animation-duration: 1.5s; }
+        [data-workspace-refresh].is-refreshing .icon { animation: none; }
+    }
 }
 
 .vetcare-bootstrap.modal-open { overflow: hidden; }

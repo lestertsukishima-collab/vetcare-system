@@ -122,8 +122,9 @@ class PatientHistoryTest extends TestCase
         $this->record($second, $vet, '2026-09-10', 'Other Bella findings');
 
         Livewire::actingAs($owner)->test(Workspace::class, ['section' => 'records', 'patient' => (string) $first->id])
-            ->assertViewHas('totalResults', 14)->assertViewHas('patientTimeline', fn ($events) => $events->count() === 12)
-            ->assertDontSee('Visit 14')->call('nextPage')->assertSee('Visit 14')->assertViewHas('patientTimeline', fn ($events) => $events->count() === 2)
+            ->assertViewHas('totalResults', 14)->assertViewHas('patientTimeline', fn ($events) => $events->count() === 6)
+            ->assertDontSee('Visit 14')->call('nextPage')->assertDontSee('Visit 14')->assertViewHas('patientTimeline', fn ($events) => $events->count() === 6)
+            ->call('nextPage')->assertSee('Visit 14')->assertViewHas('patientTimeline', fn ($events) => $events->count() === 2)
             ->set('search', 'Visit 14')->assertSet('paginators.page', 1)->assertViewHas('totalResults', 1)->assertSee('Visit 14')
             ->call('selectPatient', (string) $second->id)->assertSet('search', '')->assertSet('paginators.page', 1)
             ->assertViewHas('selectedPatient', fn ($pet) => $pet->id === $second->id)->assertSee('Other Bella findings')->assertDontSee('Visit 14')

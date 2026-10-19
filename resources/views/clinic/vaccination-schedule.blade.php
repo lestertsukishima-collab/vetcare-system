@@ -18,7 +18,7 @@
         </label>
     </div>
     <div class="vaccination-reminder-grid" aria-live="polite">
-        @forelse($vaccinationFollowUps as $row)
+        @forelse($vaccinationFollowUpPage as $row)
             @php($v = $row['vaccination'])
             <article class="vaccination-card {{ in_array($row['status'], ['overdue', 'due_today', 'due_soon']) ? 'needs-attention' : '' }}" wire:key="vaccination-reminder-{{ $v->id }}">
                 <div class="vaccination-card-heading">
@@ -43,4 +43,5 @@
             </div>
         @endforelse
     </div>
+    @include('clinic.pagination', ['paginator' => $vaccinationPagination, 'label' => 'Vaccination follow-ups pagination'])
 </section>
