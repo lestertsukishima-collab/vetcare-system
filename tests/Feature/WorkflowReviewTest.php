@@ -58,6 +58,7 @@ class WorkflowReviewTest extends TestCase
         $this->post('/logout')->assertRedirect('/');
         $this->post('/login', ['email' => 'case.owner@example.test', 'password' => 'review-password-123'])->assertSessionHasNoErrors();
         $this->getJson('/api/v1/me')->assertOk()->assertJsonPath('data.role', 'owner');
+        $this->flushSession();
         $this->actingAs($admin)->postJson('/api/v1/users', ['name' => 'Duplicate', 'email' => 'CASE.OWNER@EXAMPLE.TEST', 'password' => 'review-password-123', 'role' => 'admin'])->assertUnprocessable()->assertJsonValidationErrors('email');
     }
 
@@ -117,16 +118,20 @@ class WorkflowReviewTest extends TestCase
         $medicineId = $this->postJson('/api/v1/inventory', ['name' => 'Workflow Batch', 'unit' => 'tablet', 'unit_price' => '15.00', 'quantity' => 10, 'reorder_level' => 2, 'expires_at' => today()->addYear()->toDateString()])->assertOk()->json('data.id');
         $owner = User::where('email', 'workflow.owner@example.test')->firstOrFail();
         $this->assertSame($owner->owner->id, $ownerId);
+        $this->flushSession();
         $this->actingAs($owner);
         $petId = $this->postJson('/api/v1/pets', ['name' => 'Workflow Patient', 'species' => 'Dog', 'sex' => 'Male'])->assertOk()->json('data.id');
         $visitId = $this->postJson('/api/v1/appointments', ['pet_id' => $petId, 'veterinarian_id' => $vetId, 'service_id' => $serviceId, 'appointment_date' => now()->addDay()->toIso8601String(), 'reason' => 'Full workflow'])->assertOk()->json('data.id');
         $vet = User::where('email', 'workflow.vet@example.test')->firstOrFail();
+        $this->flushSession();
         $this->actingAs($vet)->patchJson('/api/v1/appointments/'.$visitId, ['status' => 'confirmed'])->assertOk();
         $recordId = $this->postJson('/api/v1/records', ['appointment_id' => $visitId, 'symptoms' => 'Review symptoms', 'diagnosis' => 'Review diagnosis', 'treatment' => 'Review treatment', 'items' => [['medicine_id' => $medicineId, 'quantity' => 2, 'dosage' => 'Clinician instructions', 'dispense_now' => true]], 'vaccinations' => [['vaccine_name' => 'Review vaccine', 'date_given' => today()->toDateString(), 'next_due_date' => today()->addYear()->toDateString()]]])->assertOk()->json('data.id');
         $invoice = Invoice::where('appointment_id', $visitId)->firstOrFail();
         $this->assertSame(53000, $invoice->balanceCents());
         $this->assertSame(8, Medicine::findOrFail($medicineId)->quantity);
+        $this->flushSession();
         $this->actingAs($admin)->postJson('/api/v1/payments', ['invoice_id' => $invoice->id, 'amount' => '530.00', 'method' => 'cash', 'paid_at' => now()->toIso8601String(), 'request_key' => (string) Str::uuid()])->assertOk()->assertJsonStructure(['data' => ['id']]);
+        $this->flushSession();
         $this->actingAs($owner)->getJson('/api/v1/records/'.$recordId)->assertOk()->assertJsonPath('data.prescription.items.0.dispensed_quantity', 2)->assertJsonPath('data.vaccinations.0.vaccine_name', 'Review vaccine');
         $this->getJson('/api/v1/prescriptions')->assertOk()->assertJsonPath('total', 1);
         $this->getJson('/api/v1/vaccinations?pet_id='.$petId)->assertOk()->assertJsonPath('total', 1);

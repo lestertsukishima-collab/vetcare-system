@@ -197,12 +197,14 @@ class ClinicSeederFactoryTest extends TestCase
         $this->seed(SampleClinicSeeder::class);
         foreach (['admin@vetcare.test', 'vet@vetcare.test', 'owner@vetcare.test'] as $email) {
             $user = User::where('email', $email)->firstOrFail();
+            $this->flushSession();
             $this->actingAs($user)->get('/dashboard')->assertOk();
             foreach (['pets', 'appointments', 'records', 'prescriptions', 'vaccinations'] as $page) {
                 $this->get('/clinic/'.$page)->assertOk();
             }
         }
         $admin = User::where('email', 'admin@vetcare.test')->firstOrFail();
+        $this->flushSession();
         foreach (['inventory', 'transactions', 'invoices', 'payments', 'reports'] as $page) {
             $this->actingAs($admin)->get('/clinic/'.$page)->assertOk();
         }

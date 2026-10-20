@@ -6,6 +6,7 @@
     <title>{{ ucfirst($section) }} · VetCare</title>
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
     @vite(['resources/scss/clinic-bootstrap.scss', 'resources/js/clinic-bootstrap.js'])
+    @include('partials.profile-photo-styles')
     <link rel="stylesheet" href="{{ asset('clinic.css') }}?v={{ filemtime(public_path('clinic.css')) }}" data-navigate-track>
     <link rel="stylesheet" href="{{ asset('clinic-responsive.css') }}?v={{ filemtime(public_path('clinic-responsive.css')) }}" data-navigate-track>
     @livewireStyles
@@ -45,7 +46,7 @@
             <button class="command-trigger" type="button" aria-label="Open quick navigation" data-command-open data-bs-toggle="tooltip" data-bs-title="Quick navigation (Ctrl K)"><x-clinic.icon name="search" /><span>Quick navigation</span><kbd>Ctrl K</kbd></button>
             <button type="button" class="icon-button" data-theme-toggle aria-label="Toggle color theme" data-bs-toggle="tooltip" data-bs-title="Switch color theme"><x-clinic.icon name="sun" /></button>
             <button type="button" class="icon-button" data-workspace-refresh aria-label="Refresh workspace" aria-busy="false" data-bs-toggle="tooltip" data-bs-title="Refresh workspace"><x-clinic.icon name="refresh" /></button>
-            <details class="user-menu"><summary aria-label="Account menu"><span class="avatar">{{ auth()->user()->initials() }}</span><span class="profile-name"><strong>{{ auth()->user()->name }}</strong><span>{{ $role === 'owner' ? 'Pet Owner' : ucfirst($role) }}</span></span><span class="chevron">⌄</span></summary><div class="user-dropdown"><a href="{{ route('profile.edit') }}"><x-clinic.icon name="settings" />Account settings</a><form method="POST" action="{{ route('logout') }}">@csrf<button type="submit"><x-clinic.icon name="logout" />Sign out</button></form></div></details>
+            <details class="user-menu"><summary aria-label="Account menu"><x-account-avatar :user="auth()->user()" /><span class="profile-name"><strong>{{ auth()->user()->name }}</strong><span>{{ $role === 'owner' ? 'Pet Owner' : ucfirst($role) }}</span></span><span class="chevron">⌄</span></summary><div class="user-dropdown"><a href="{{ route('profile.edit') }}"><x-clinic.icon name="settings" />Account settings</a><form method="POST" action="{{ route('logout') }}">@csrf<button type="submit"><x-clinic.icon name="logout" />Sign out</button></form></div></details>
         </div>
     </header>
     <livewire:clinic.workspace :section="$section" />

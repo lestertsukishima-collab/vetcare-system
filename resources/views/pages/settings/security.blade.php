@@ -95,6 +95,12 @@ new #[Title('Security settings')] class extends Component {
             'password' => $validated['password'],
         ]);
 
+        // Keep this browser authenticated while older sessions retain their previous hash.
+        session()->put(
+            'password_hash_'.Auth::getDefaultDriver(),
+            Auth::guard()->hashPasswordForCookie(Auth::user()->getAuthPassword()),
+        );
+
         $this->reset('current_password', 'password', 'password_confirmation');
 
         Flux::toast(variant: 'success', text: __('Password updated.'));

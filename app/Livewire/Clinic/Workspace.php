@@ -74,6 +74,21 @@ class Workspace extends Component
     #[On('clinic-saved')]
     public function refreshWorkspace(): void {}
 
+    public function printReport(): void
+    {
+        app(ClinicAccess::class)->authorize($this->actor(), $this->section);
+        abort_unless(in_array($this->section, ['invoices', 'reports']), 404);
+        $parameters = ['section' => $this->section];
+        if ($this->section === 'invoices' && trim($this->search) !== '') {
+            $parameters['search'] = mb_substr(trim($this->search), 0, 150);
+        }
+        $page = (int) $this->getPage();
+        if ($page > 1) {
+            $parameters['page'] = (string) $page;
+        }
+        $this->redirectRoute('clinic.print', $parameters);
+    }
+
     public function changeStatus(int $id, string $status): void
     {
         $user = $this->actor();

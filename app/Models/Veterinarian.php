@@ -18,6 +18,16 @@ class Veterinarian extends ClinicModel
         return $this->belongsTo(User::class);
     }
 
+    public function bookingPhotoUrl(): ?string
+    {
+        $path = $this->user->profile_photo_path;
+
+        return $path ? route('veterinarians.photo', [
+            'veterinarian' => $this->id,
+            'version' => basename($path),
+        ]) : null;
+    }
+
     /** @return HasMany<Appointment, $this> */
     public function appointments(): HasMany
     {

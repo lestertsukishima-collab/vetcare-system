@@ -1,6 +1,9 @@
 <?php
 
+use App\Http\Controllers\ClinicPrintController;
 use App\Http\Controllers\EmailVerificationStatusController;
+use App\Http\Controllers\PetPhotoController;
+use App\Http\Controllers\VeterinarianPhotoController;
 use App\Http\Controllers\WorkspaceController;
 use Illuminate\Support\Facades\Route;
 
@@ -11,6 +14,13 @@ Route::get('email/verification-status', EmailVerificationStatusController::class
     ->name('verification.status');
 
 Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('clinic/{section}/print', ClinicPrintController::class)->name('clinic.print');
+
+    Route::get('clinic/pets/{pet}/photo/{version}', PetPhotoController::class)->name('pets.photo');
+
+    Route::get('clinic/veterinarians/{veterinarian}/photo/{version}', VeterinarianPhotoController::class)
+        ->name('veterinarians.photo');
+
     Route::get('dashboard', [WorkspaceController::class, 'index'])->name('dashboard');
     Route::get('clinic/{section}', [WorkspaceController::class, 'index'])->name('clinic.index');
     Route::post('clinic/{section}', [WorkspaceController::class, 'store'])->name('clinic.store');

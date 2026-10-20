@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Contracts\PasskeyUser;
@@ -27,6 +28,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property string $role
  * @property bool $active
  * @property string $password
+ * @property string|null $profile_photo_path
  * @property string|null $two_factor_secret
  * @property string|null $two_factor_recovery_codes
  * @property Carbon|null $two_factor_confirmed_at
@@ -35,7 +37,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['name', 'email', 'password'])]
-#[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
+#[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token', 'profile_photo_path'])]
 class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
 {
     protected $attributes = ['role' => 'owner', 'active' => true];
@@ -63,6 +65,11 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
             }
             $user->owner()->delete();
             $user->veterinarian()->delete();
+        });
+        static::deleted(function (User $user): void {
+            if ($user->profile_photo_path) {
+                Storage::disk('local')->delete($user->profile_photo_path);
+            }
         });
     }
 
@@ -105,5 +112,12 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
         return Str::length($initials) > 1
             ? Str::substr($initials, 0, 1).Str::substr($initials, -1)
             : $initials;
+    }
+
+    public function profilePhotoUrl(): ?string
+    {
+        return $this->profile_photo_path
+            ? route('profile-photo.show', ['version' => basename($this->profile_photo_path)])
+            : null;
     }
 }

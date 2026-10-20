@@ -1,6 +1,6 @@
 <section class="panel history-profile" aria-labelledby="history-patient-name" wire:key="patient-profile-{{ $selectedPatient->id }}">
     <div class="history-profile-heading">
-        <span class="patient-avatar"><x-clinic.icon name="pets" /></span>
+        <x-pet-avatar :pet="$selectedPatient" />
         <div>
             <div class="eyebrow">Patient #{{ $selectedPatient->id }} · {{ $selectedPatient->species }}</div>
             <h2 id="history-patient-name">{{ $selectedPatient->name }}</h2>

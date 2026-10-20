@@ -31,6 +31,8 @@ class ClinicLifecycleTest extends TestCase
         $medicine = Medicine::firstOrFail();
         $service = Service::firstOrFail();
 
+        // Each role uses a separate authenticated browser session.
+        $this->flushSession();
         $this->actingAs($owner)->post('/clinic/pets', ['name' => 'Milo', 'species' => 'Cat', 'sex' => 'Male'])->assertSessionHasNoErrors();
         $this->post('/clinic/pets', ['name' => 'Luna', 'species' => 'Dog', 'sex' => 'Female'])->assertSessionHasNoErrors();
         $pet = Pet::where('name', 'Milo')->firstOrFail();
@@ -38,9 +40,11 @@ class ClinicLifecycleTest extends TestCase
         $visit = Appointment::firstOrFail();
         $this->assertSame('pending', $visit->status);
         $this->assertSame(2, $owner->owner->pets()->count());
+        $this->flushSession();
         $this->actingAs($admin)->patch('/clinic/appointments/'.$visit->id, ['status' => 'confirmed'])->assertSessionHasNoErrors();
         $this->travelTo($visit->appointment_date);
 
+        $this->flushSession();
         $this->actingAs($vet)->get('/clinic/appointments')->assertOk()->assertSee('Milo');
         $this->post('/clinic/records', [
             'appointment_id' => $visit->id, 'symptoms' => 'Lifecycle findings', 'diagnosis' => 'Lifecycle assessment', 'treatment' => 'Lifecycle plan',
@@ -53,12 +57,14 @@ class ClinicLifecycleTest extends TestCase
         $invoice = Invoice::firstOrFail();
         $this->assertSame('completed', $visit->fresh()->status);
         $this->assertSame(53000, $invoice->balanceCents());
+        $this->flushSession();
         $this->actingAs($owner)->get('/clinic/records')->assertSee('Lifecycle findings');
         $this->get('/clinic/prescriptions')->assertSee('Recorded clinician instructions');
         $this->get('/clinic/vaccinations')->assertSee('Lifecycle Vaccine A')->assertSee('Lifecycle Vaccine B');
         $this->get('/clinic/invoices')->assertSee('530.00');
         $this->post('/clinic/payments', [])->assertForbidden();
 
+        $this->flushSession();
         $this->actingAs($admin)->post('/clinic/payments', ['invoice_id' => $invoice->id, 'amount' => '200.00', 'method' => 'cash', 'paid_at' => now()->format('Y-m-d H:i:s'), 'request_key' => (string) Str::uuid()])->assertSessionHasNoErrors();
         $this->assertSame(33000, $invoice->fresh()->balanceCents());
         $this->post('/clinic/payments', ['invoice_id' => $invoice->id, 'amount' => '330.00', 'method' => 'bank_transfer', 'reference' => 'PAY-LIFE-001', 'paid_at' => now()->format('Y-m-d H:i:s'), 'request_key' => (string) Str::uuid()])->assertSessionHasNoErrors();
@@ -66,6 +72,7 @@ class ClinicLifecycleTest extends TestCase
         $this->patch('/clinic/inventory/'.$medicine->id, ['operation' => 'stock', 'quantity_change' => 5, 'notes' => 'Delivery LIFE-001'])->assertSessionHasNoErrors();
         $this->assertSame(21, $medicine->fresh()->quantity);
         $this->get('/clinic/reports')->assertOk()->assertSee('530.00');
+        $this->flushSession();
         $this->actingAs($owner)->get('/clinic/invoices')->assertSee('Paid')->assertSee('PAY-LIFE-001');
 
         foreach (['users' => 3, 'owners' => 1, 'veterinarians' => 1, 'pets' => 2, 'appointments' => 1, 'medical_records' => 1, 'prescriptions' => 1, 'prescription_items' => 1, 'vaccinations' => 2, 'medicines' => 1, 'services' => 1, 'invoices' => 1, 'payments' => 2, 'inventory_transactions' => 3] as $table => $count) {

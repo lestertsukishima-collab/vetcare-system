@@ -40,11 +40,41 @@ Clinic styles are in `public/clinic.css` and `public/clinic-responsive.css`; Jav
 
 Account settings links and links back to the clinic workspace use full page navigation because these layouts have separate stylesheets. This lets the browser load the correct styles before painting and clears the previous layout's global styles. Navigation within the clinic and between settings tabs still uses Livewire. `SettingsNavigationTest` covers these layout boundaries.
 
+## Printing invoices and clinic reports
+
+**Print report** on Invoices or Reports opens an authenticated print preview in the same tab. It opens the browser print dialog after styles and fonts are ready; **Print / Save PDF** can open it again. **Back** returns to the previous section, invoice search, and page.
+
+Invoice printing includes every invoice matching the current search across all pages, complete payment histories, and totals calculated in integer cents. Owners receive only their own invoices; administrators receive all invoices. Clinic reports remain administrator-only and show all-time activity. The standalone preview uses light paper styles, A4 margins, wrapping table content, and repeating table headings. Workspace controls and pagination are excluded.
+
+`ClinicPrintTest` verifies complete multi-page output, filters, totals, payment history, permissions, malformed queries, escaped input, and Livewire redirects. Frontend tests verify readiness, duplicate-dialog prevention, manual retry, and error handling. A connected browser was unavailable, so Edge's native print preview, actual PDF pagination, and physical printer output have not been visually verified.
+
+## Profile photos
+
+Account avatars, veterinarian booking photos, pet photos, and upload previews display as circles at every size. Initials and paw fallbacks use the same circular frames. Uploaded files retain a 1:1 ratio for consistent cropping.
+
+Every account role (pet owner, veterinarian, and administrator) can upload, replace, or remove its own photo under **Account settings → Profile → Profile photo**. Choose a JPG, PNG, or WebP image of at most 2 MB, adjust the circular preview using zoom and horizontal/vertical position, and select **Save photo**. Choosing a new image leaves the saved photo in place until saving succeeds; cancelling discards only the selection.
+
+The browser creates a 512 × 512 PNG from the selected 1:1 crop. The server independently validates image content, allowed formats, the 2 MB limit, and exact square dimensions. Saved photos appear in the workspace account menu and the desktop/mobile settings account menus; removing a photo restores initials. Replacements use a fresh URL and remove the previous file after the database update succeeds.
+
+Photos use the private `local` storage disk and authenticated routes; no public storage link or mail/environment changes are needed. Owners' and administrators' photos are available only to their own accounts. Active veterinarians' photos can also be viewed by verified clinic users through the booking photo route. Run migrations when deploying the new `users.profile_photo_path` column. `ProfilePhotoTest` covers all roles, upload/replacement/removal, size boundaries, square dimensions, invalid formats, and photo access. Frontend tests cover cropping, cancellation, upload failures, duplicate requests, and avatar updates.
+
+Booking and rescheduling use selectable veterinarian cards with a circular photo (or initials), full name, and specialization. Only active veterinarian accounts appear. Cards use native required radio inputs, support keyboard selection, and retain the chosen doctor after validation errors. The same uploaded profile photo is used; replacements receive a new booking URL, and removed or inactive doctors' photo URLs return 404. `VeterinarianBookingPhotosTest` covers photo delivery, privacy, card selection, booking, and rescheduling.
+
+## Pet photos for appointed veterinarians
+
+Owners open **My pets → Manage pet photo** on a saved pet's card to upload, replace, or remove its photo. Administrators can manage pet photos from the patient directory too. The shared cropper creates a 512 × 512 square image, with the same JPG/PNG/WebP selection and 2 MB limit as account photos. Saving a photo updates that pet's visible avatars immediately. Pets without a photo show the paw icon.
+
+Pet photos appear in appointment rows (including dashboard previews), patient cards, medical history search results, and the selected patient's history profile. A veterinarian can view a photo only when that veterinarian has an appointment for the pet. Access follows appointment reassignment. Owners see their own pets and administrators see all pets; veterinarians cannot change these photos. Files stay on private storage and photo responses use `no-store` so access is checked again when requested. The new `pets.photo_path` migration is required when deploying this feature.
+
+`PetPhotosTest` covers owner/admin uploads, replacement/removal, appointed-doctor views, unrelated-account denial, reassignment, role changes, locked pet IDs, size/dimension validation, and private path protection. The shared frontend tests cover pet-specific uploads, independent crop editors, avatar updates, and paw fallbacks.
+
 `ClinicLivewireTest` covers search/pagination, ownership checks, status transitions, booking conflicts, rescheduling, repeatable clinical rows, atomic completion, duplicate payment protection, filter behavior, permissions after role changes, history pagination, and administrator forms. Existing lifecycle, security, migration, and schema tests also run against the redesigned pages.
 
 Automated checks verify rendered Laravel views and Livewire actions. An interactive browser was unavailable during this implementation, so viewport screenshots and a visual browser walkthrough remain unverified.
 
 ## Requirements review updates
+
+Login sessions use Laravel's `AuthenticateSession` middleware across web, Livewire, and session-authenticated API requests. A password change or reset makes established older sessions fail authentication on their next request; the session changing its password keeps working. Logout clears session data and rotates the CSRF token. Inactive accounts continue to be signed out by `EnsureActiveAccount`. `SessionLifecycleTest` covers stale-session rejection, authenticated API writes, current-session continuity, and logout.
 
 Owners can provide optional phone/address when registering and update or clear these fields in account settings. Search reads visible content rather than serialized field names, accepts displayed invoice numbers, filters vaccination follow-ups with history, and limits queries to 150 characters. Upcoming appointments appear nearest first. Clinic access is rechecked after email verification or account changes, and malformed prescription/vaccine rows return validation errors.
 

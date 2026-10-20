@@ -17,7 +17,7 @@
         <div class="history-patient-list" aria-live="polite">
             @forelse($historyPatientPage as $historyPet)
                 <button type="button" class="history-patient-choice" wire:click="selectPatient('{{ $historyPet->id }}')" wire:loading.attr="disabled" wire:key="history-patient-{{ $historyPet->id }}" aria-label="Open {{ $historyPet->name }}'s medical history, patient {{ $historyPet->id }}">
-                    <span class="patient-avatar"><x-clinic.icon name="pets" /></span>
+                    <x-pet-avatar :pet="$historyPet" />
                     <span><strong>{{ $historyPet->name }}</strong><span>{{ $historyPet->breed ?: $historyPet->species }} · {{ $historyPet->sex }}</span><small>{{ $historyPet->owner->user->name }} · Patient #{{ $historyPet->id }}</small></span>
                     <x-clinic.icon name="arrow" />
                 </button>

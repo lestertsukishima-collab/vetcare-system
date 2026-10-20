@@ -1,0 +1,58 @@
+.account-avatar{display:inline-grid;place-items:center;flex:none;width:36px;height:36px;aspect-ratio:1;overflow:hidden;border-radius:50%;background:#dfebdd;color:#294b3a;font-size:14px;font-weight:650;vertical-align:middle}
+.account-avatar img{display:block;width:100%;height:100%;object-fit:cover}
+.dark .account-avatar,:root[data-theme=dark] .account-avatar{background:#334e38;color:#e1eae0}
+.profile-photo-editor{margin-top:24px;padding-bottom:24px;border-bottom:1px solid #dce4d9}
+.dark .profile-photo-editor{border-color:#33433b}
+.profile-photo-current{display:flex;align-items:center;gap:20px;margin-top:18px;min-width:0}
+.profile-photo-current>div{min-width:0}
+.account-avatar.profile-photo-avatar{width:96px;height:96px;font-size:28px}
+.profile-photo-label{display:block;font-size:14px;font-weight:600;margin-bottom:8px}
+.profile-photo-editor input[type=file]{display:block;width:100%;max-width:340px;font:inherit;font-size:13px;margin-bottom:8px}
+.profile-photo-editor input[type=file]::file-selector-button{border:1px solid #9baa96;border-radius:8px;background:transparent;color:inherit;padding:8px 12px;margin-right:10px;cursor:pointer}
+.profile-photo-feedback{font-size:13px;margin-top:12px;min-height:20px}
+.profile-photo-error,.profile-photo-feedback[data-error=true]{color:#b13c36}
+.dark .profile-photo-error,.dark .profile-photo-feedback[data-error=true]{color:#f0aaa1}
+.profile-photo-crop{display:flex;align-items:center;gap:24px;margin-top:16px;flex-wrap:wrap}
+.profile-photo-crop[hidden]{display:none}
+.profile-photo-crop canvas{display:block;width:min(256px,100%);height:auto;aspect-ratio:1;border-radius:50%;border:1px solid #9baa96;background:repeating-conic-gradient(#eee 0% 25%,#fff 0% 50%) 50%/16px 16px}
+.profile-photo-controls{flex:1;min-width:min(220px,100%)}
+.profile-photo-controls label{display:block;font-size:13px;font-weight:500;margin-bottom:16px}
+.profile-photo-controls input[type=range]{display:block;width:100%;margin-top:8px;accent-color:#2b6652;min-height:24px}
+.profile-photo-actions{display:flex;gap:12px;flex-wrap:wrap}
+.profile-photo-actions button{padding:10px 16px;border:1px solid #9baa96;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;min-height:44px}
+.profile-photo-save{background:#2b6652;color:#fff}
+.profile-photo-cancel{background:transparent;color:inherit}
+.profile-photo-editor button:disabled,.profile-photo-editor input:disabled{opacity:.55;cursor:wait}
+.profile-photo-editor :focus-visible{outline:2px solid #7d9a72;outline-offset:3px}
+@media(max-width:480px){.profile-photo-current{align-items:flex-start;gap:14px}.account-avatar.profile-photo-avatar{width:72px;height:72px}.profile-photo-crop{gap:18px}}
+
+.veterinarian-picker{min-width:0;margin:0;padding:0;border:0}
+.veterinarian-picker legend{float:none;width:auto;padding:0;margin:0 0 4px;color:var(--ink);font-size:14px;font-weight:650}
+.veterinarian-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:12px;max-height:384px;overflow-y:auto;padding:3px;scrollbar-width:thin}
+.fields .veterinarian-option{position:relative;margin:0;cursor:pointer;min-width:0}
+.veterinarian-option-body{display:flex;align-items:center;gap:13px;height:100%;min-height:88px;padding:15px 44px 15px 15px;border:1px solid var(--line);border-radius:12px;background:var(--paper);transition:background .15s,border-color .15s,box-shadow .15s}
+.veterinarian-option:hover .veterinarian-option-body{background:var(--soft);border-color:var(--green)}
+.veterinarian-option input[type=radio]{position:absolute;right:16px;top:50%;transform:translateY(-50%);z-index:1;width:18px;height:18px;margin:0;padding:0;accent-color:var(--green);cursor:pointer}
+.veterinarian-option input:checked+.veterinarian-option-body{background:var(--soft);border-color:var(--green);box-shadow:0 0 0 1px var(--green)}
+.veterinarian-option input:focus-visible+.veterinarian-option-body{outline:2px solid var(--green);outline-offset:2px}
+.account-avatar.veterinarian-avatar{width:56px;height:56px;font-size:18px}
+.veterinarian-option-info{display:flex;flex-direction:column;gap:5px;min-width:0;overflow-wrap:anywhere}
+.veterinarian-option-info strong{color:var(--ink);font-size:13px;font-weight:650;line-height:1.4}
+.veterinarian-option-info>span{color:var(--muted);font-size:11px;line-height:1.5}
+@media(max-width:540px){.veterinarian-options{grid-template-columns:minmax(0,1fr)}.veterinarian-option-body{min-height:88px}}
+
+.patient-avatar.pet-photo[data-pet-avatar]{overflow:hidden;flex:none;border-radius:50%}
+.pet-photo>.pet-photo-content{display:grid;place-items:center;width:100%;height:100%}
+.pet-photo img{display:block;width:100%;height:100%;object-fit:cover}
+.pet-photo.profile-photo-avatar{width:96px;height:96px}
+.pet-photo-editor{border-bottom:0;padding-bottom:0;margin-top:14px}
+.pet-photo-editor .profile-photo-current{align-items:flex-start;flex-wrap:wrap;gap:14px}
+.pet-photo-editor .profile-photo-current>div{flex:1;min-width:min(180px,100%)}
+.pet-photo-editor .profile-photo-label{font-size:12px}
+.pet-photo-editor input[type=file]{margin:0 0 12px}
+.pet-photo-editor .profile-photo-feedback{min-height:0}
+.pet-photo-editor .profile-photo-feedback:empty{margin:0}
+.pet-photo-details{border-top:1px solid var(--line);padding-top:14px;margin-top:16px}
+.appointment-patient{display:flex;align-items:center;gap:12px}
+.appointment-patient>.pet-photo{width:44px;height:44px;margin:0}
+@media(max-width:480px){.pet-photo.profile-photo-avatar{width:72px;height:72px}}

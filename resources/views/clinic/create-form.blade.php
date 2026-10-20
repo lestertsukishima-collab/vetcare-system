@@ -14,13 +14,14 @@
 @if($canCreate)<details id="create" class="panel create" open><summary>{{ $formTitles[$section] }}</summary><x-clinic.form :action="route('clinic.store',$section)" :form-key="'create-'.$section" :reactive="$reactive ?? false" :values="$data ?? []" class="fields">
 @if($section === 'pets')
 @include('clinic.pet-fields',['pet'=>null])
+<p class="wide helper">After saving your pet, open Manage pet photo on their card to add a picture for the clinic.</p>
 @if($role === 'admin')<label>Pet owner<select class="form-select @error('owner_id') is-invalid @enderror" name="owner_id" @if($reactive ?? false) wire:model="data.owner_id" @endif required><option value="">Choose owner</option>@foreach($owners->filter(fn($o)=>$o->user->active) as $o)<option value="{{ $o->id }}" @selected(($formInput['owner_id'] ?? null) == $o->id)>{{ $o->user->name }} · {{ $o->user->email }}</option>@endforeach</select></label>@endif
 @elseif($section === 'appointments')
 <label>Patient<select class="form-select @error('pet_id') is-invalid @enderror" name="pet_id" @if($reactive ?? false) wire:model="data.pet_id" @endif required><option value="">Choose pet</option>@foreach($pets as $p)<option value="{{ $p->id }}" @selected(($formInput['pet_id'] ?? null) == $p->id)>{{ $p->name }} · {{ $p->owner->user->name }}</option>@endforeach</select></label>
-<label>Veterinarian<select class="form-select @error('veterinarian_id') is-invalid @enderror" name="veterinarian_id" @if($reactive ?? false) wire:model="data.veterinarian_id" @endif required><option value="">Choose veterinarian</option>@foreach($vets->filter(fn($v)=>$v->user->active && $v->user->role === 'veterinarian') as $v)<option value="{{ $v->id }}" @selected(($formInput['veterinarian_id'] ?? null) == $v->id)>{{ $v->user->name }} · {{ $v->specialization ?: 'General practice' }}</option>@endforeach</select></label>
 <label>Service<select class="form-select @error('service_id') is-invalid @enderror" name="service_id" @if($reactive ?? false) wire:model.live="data.service_id" @endif required><option value="">Choose service</option>@foreach($services->where('active',true) as $s)<option value="{{ $s->id }}" @selected(($formInput['service_id'] ?? null) == $s->id)>{{ $s->name }} · ₱{{ number_format($s->price,2) }}</option>@endforeach</select></label>
 <x-clinic.field name="appointment_date" label="Visit date & time" type="datetime-local" :min="now()->format('Y-m-d\TH:i')" required />
-<x-clinic.field name="reason" label="Reason for visit" type="textarea" required maxlength="5000" />
+@include('clinic.veterinarian-picker')
+<div class="wide"><x-clinic.field name="reason" label="Reason for visit" type="textarea" required maxlength="5000" /></div>
 @if(($reactive ?? false) && !empty($data['service_id']) && ($selectedService = $services->firstWhere('id',$data['service_id'])))<div class="wide booking-summary"><span class="stat-icon"><x-clinic.icon name="services" /></span><div><strong>{{ $selectedService->name }}</strong><span>30-minute reserved visit · Fee confirmed when booked</span></div><strong>₱{{ number_format($selectedService->price,2) }}</strong></div>@endif
 <div class="wide helper">Visits reserve a 30-minute slot in {{ config('app.timezone') }}. Your request will be pending until confirmed by the clinic.</div>
 @elseif($section === 'records')

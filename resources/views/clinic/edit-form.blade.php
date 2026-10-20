@@ -2,7 +2,7 @@
     @if($section === 'pets')
         @include('clinic.pet-fields', ['pet' => null])
     @elseif($section === 'appointments')
-        <label>Veterinarian<select class="form-select @error('veterinarian_id') is-invalid @enderror" name="veterinarian_id" wire:model="data.veterinarian_id" required>@foreach($vets as $v)<option value="{{ $v->id }}">{{ $v->user->name }}</option>@endforeach</select></label>
+        @include('clinic.veterinarian-picker', ['formInput' => $data])
         <x-clinic.field name="appointment_date" label="New visit date & time" type="datetime-local" :min="now()->format('Y-m-d\TH:i')" required />
         <p class="wide helper">Changing the visit returns it to pending confirmation. The booked service fee stays the same.</p>
     @elseif($section === 'users')

@@ -12,5 +12,6 @@
 @fonts
 
 @vite(['resources/css/app.css', 'resources/js/app.js'])
+@include('partials.profile-photo-styles')
 @include('partials.email-verification')
 @fluxAppearance

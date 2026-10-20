@@ -4,6 +4,8 @@ import Toast from 'bootstrap/js/dist/toast';
 import Tooltip from 'bootstrap/js/dist/tooltip';
 import { installClinicBootstrap } from './clinic-bootstrap-ui.js';
 import { installClinicEvents } from './clinic-events.js';
+import { installProfilePhotos } from './profile-photos.js';
 
 installClinicBootstrap({ window, document, Alert, Modal, Toast, Tooltip });
 installClinicEvents({ window, document });
+installProfilePhotos({ window, document });
