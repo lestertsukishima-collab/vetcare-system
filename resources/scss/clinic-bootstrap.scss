@@ -55,13 +55,13 @@ $input-focus-box-shadow: 0 0 0 .2rem rgba($primary, .15);
     .table { --bs-table-bg: transparent; --bs-table-color: var(--ink); --bs-table-hover-color: var(--ink); --bs-table-hover-bg: var(--soft); margin-bottom: 0; }
     .table > :not(caption) > * > * { padding: 14px 12px; }
     .table th { color: var(--muted); background: var(--soft); }
-    .form-control, .form-select { min-width: 0; font-size: 13px; line-height: 1.5; }
+    .form-control, .form-select { min-width: 0; min-height: 44px; font-size: 14px; line-height: 1.5; }
     .history-search-row .form-control { padding-inline-start: 42px; }
     .history-search-icon { display: grid; place-items: center; width: 18px; height: 18px; }
     .form-control::placeholder { color: var(--muted); opacity: .8; }
     .form-control:disabled, .form-select:disabled { color: var(--muted); background-color: var(--soft); }
     .form-control.is-invalid, .form-select.is-invalid { border-color: var(--danger); }
-    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 12px; font-weight: 550; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; font-size: 14px; font-weight: 550; }
     .btn-primary { --bs-btn-bg: var(--green); --bs-btn-border-color: var(--green); --bs-btn-color: var(--paper); --bs-btn-hover-bg: var(--green-hover); --bs-btn-hover-border-color: var(--green-hover); --bs-btn-hover-color: var(--paper); }
     .btn-outline-secondary { --bs-btn-color: var(--ink); --bs-btn-border-color: var(--line); --bs-btn-hover-bg: var(--soft); --bs-btn-hover-color: var(--ink); --bs-btn-hover-border-color: var(--green); }
     .alert { font-size: 12px; border-radius: 10px; }

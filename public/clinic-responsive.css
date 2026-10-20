@@ -41,6 +41,43 @@ input, select, textarea { min-width: 0; max-width: 100%; }
 footer { flex-wrap: wrap; overflow-wrap: anywhere; }
 .mobile-nav-heading { display: none; }
 
+/* Readable clinical content and clearly grouped navigation at every width. */
+.vetcare-bootstrap { font-size: 15px; }
+.vetcare-bootstrap .sidebar { padding-top: 24px; }
+.vetcare-bootstrap .brand small { font-size: 9px; }
+.vetcare-bootstrap .workspace-label { font-size: 12px; }
+.vetcare-bootstrap .nav-group-label { margin: 0; padding-top: 18px; font-size: 10px; letter-spacing: 1px; }
+.vetcare-bootstrap .main-nav a { min-height: 44px; font-size: 14px; }
+.vetcare-bootstrap .sidebar-account { margin-top: auto; border-top: 1px solid var(--line); padding-top: 16px; font-size: 13px; }
+.vetcare-bootstrap .breadcrumb { font-size: 13px; }
+.vetcare-bootstrap h2 { font-size: 18px; line-height: 1.4; }
+.vetcare-bootstrap h3 { font-size: 16px; }
+.vetcare-bootstrap .title-subtitle { font-size: 14px; line-height: 1.7; max-width: 68ch; }
+.vetcare-bootstrap .eyebrow { font-size: 11px; letter-spacing: 1.2px; }
+.vetcare-bootstrap .muted, .vetcare-bootstrap .panel-caption { font-size: 12px; }
+.vetcare-bootstrap .fields label, .vetcare-bootstrap .rx-row label, .vetcare-bootstrap .vaccine-row label { font-size: 14px; }
+.vetcare-bootstrap .helper { font-size: 13px; line-height: 1.7; }
+.vetcare-bootstrap table { font-size: 14px; }
+.vetcare-bootstrap th { font-size: 11px; letter-spacing: .65px; }
+.vetcare-bootstrap .badge { font-size: 11px; }
+.vetcare-bootstrap .filter-chip { min-height: 44px; font-size: 13px; }
+.vetcare-bootstrap .result-count, .vetcare-bootstrap .pagination-bar { font-size: 13px; }
+.vetcare-bootstrap .stat .muted { font-size: 13px; }
+.vetcare-bootstrap .stat small { font-size: 12px; }
+.vetcare-bootstrap .followup strong { font-size: 14px; }
+.vetcare-bootstrap .followup p, .vetcare-bootstrap .quick-link { font-size: 13px; }
+.vetcare-bootstrap .empty { font-size: 13px; line-height: 1.7; }
+.vetcare-bootstrap .history-clinical-details dd, .vetcare-bootstrap .history-vaccine-details dd, .vetcare-bootstrap .history-profile-details { font-size: 14px; }
+.vetcare-bootstrap :is(a, button, summary):focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
+.dashboard-actions { margin-bottom: 24px; }
+.dashboard-actions h2 { margin-bottom: 12px; }
+.task-card { display: grid; grid-template-columns: 36px minmax(0, 1fr) 18px; align-items: start; gap: 12px; height: 100%; padding: 18px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); }
+.task-card:hover { background: var(--soft); border-color: var(--green); }
+.task-icon { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 10px; background: var(--soft); color: var(--green); }
+.task-card > .icon { width: 18px; margin-top: 6px; color: var(--green); }
+.task-card strong { display: block; font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; }
+.task-card p { margin: 6px 0 0; font-size: 13px; line-height: 1.6; color: var(--muted); overflow-wrap: anywhere; }
+
 @media (max-width: 1250px) {
     .fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .rx-row, .vaccine-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -51,11 +88,13 @@ footer { flex-wrap: wrap; overflow-wrap: anywhere; }
     .profile-name, .chevron { display: none; }
 }
 @media (pointer: coarse) {
+    .vetcare-bootstrap .form-control, .vetcare-bootstrap .form-select { font-size: 16px; }
     :is(button, .button, .icon-button, .user-menu summary, .main-nav a, .quick-link, .command-results a) { min-height: 44px; }
     :is(.icon-button, .command-trigger, .user-menu summary) { min-width: 44px; }
     input, select, textarea, .search, .filter-bar select, .reminder-filter select, .command-heading input { font-size: 16px; }
 }
 @media (max-width: 1024px) {
+    .vetcare-bootstrap .form-control, .vetcare-bootstrap .form-select { font-size: 16px; }
     :root { --sidebar: 0px; }
     body.nav-open { overflow: hidden; }
     .sidebar { width: min(290px, calc(100vw - 48px)); max-width: calc(100vw - 48px); transform: translateX(-100%); visibility: hidden; transition: transform .22s; overscroll-behavior: contain; padding-top: max(16px, env(safe-area-inset-top)); padding-bottom: max(16px, env(safe-area-inset-bottom)); padding-left: max(18px, env(safe-area-inset-left)); padding-right: 18px; }
@@ -126,6 +165,7 @@ footer { flex-wrap: wrap; overflow-wrap: anywhere; }
     .welcome-caption { padding: 10px 12px; font-size: 10px; }
 }
 @media print {
+    .dashboard-actions { display: none !important; }
     .mobile-nav-heading, .table-scroll-hint { display: none !important; }
     .scroll { overflow: visible; max-width: none; }
     table { white-space: normal; overflow-wrap: anywhere; }

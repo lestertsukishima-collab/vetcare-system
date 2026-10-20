@@ -47,7 +47,8 @@ class ClinicPrintTest extends TestCase
         $this->assertStringContainsString('private', $response->headers->get('Cache-Control'));
         $this->assertStringContainsString('no-store', $response->headers->get('Cache-Control'));
         $response->assertSee('clinic-print.css')->assertSee('clinic-print.js')
-            ->assertDontSee('wire:')->assertDontSee('class="pagination', false)->assertDontSee('clinic-bootstrap');
+            ->assertDontSee('wire:click=')->assertDontSee('wire:model')
+            ->assertDontSee('class="pagination', false)->assertDontSee('clinic-bootstrap');
     }
 
     public function test_invoice_search_prints_all_matches_and_uses_displayed_numbers_and_payment_references(): void

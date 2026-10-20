@@ -1,15 +1,14 @@
 <div class="workspace-content" data-clinic-workspace @if($section === 'dashboard') wire:poll.60s.visible @endif>
 @php
     $role = auth()->user()->role;
-    $links = ['dashboard'=>'Overview','pets'=>$role === 'owner' ? 'My pets' : 'Patients','appointments'=>'Appointments','records'=>'Medical records','prescriptions'=>'Prescriptions','vaccinations'=>'Vaccinations'];
-    if (in_array($role,['owner','admin'])) $links['invoices'] = 'Invoices';
-    if ($role === 'admin') $links += ['owners'=>'Pet owners','veterinarians'=>'Veterinarians','services'=>'Services','inventory'=>'Medicine inventory','transactions'=>'Stock history','payments'=>'Payments','users'=>'Users','reports'=>'Reports','settings'=>'Clinic settings'];
+    $navigation = app(\App\Support\ClinicNavigation::class);
+    $links = $navigation->links($role);
     $upcoming = $appointments->filter(fn($a)=>in_array($a->status,['pending','confirmed']) && $a->appointment_date->isFuture())->sortBy('appointment_date');
     $clinical = $history;
     $latestVaccinationIds = $latestVaccinations->pluck("vaccination.id")->all();
     $due = $latestVaccinations->filter(fn($row)=>$row["vaccination"]->next_due_date && $row["vaccination"]->next_due_date->lte(today()->addDays(30)));
 @endphp
-<div class="title-row"><div><div class="eyebrow">{{ now()->format('l, F j, Y') }}</div><h1>{{ $section === 'dashboard' ? 'Hello, '.strtok(auth()->user()->name, ' ').'.' : $links[$section] }}</h1><p class="title-subtitle">{{ $section === 'dashboard' ? 'Here’s what’s happening in your care workspace.' : 'Every detail, a little closer to better care.' }}</p></div>@if(in_array($role,['admin','owner']) && in_array($section,['dashboard','appointments','pets']))<a class="button btn btn-primary" href="{{ $section === 'pets' ? '#create' : ($section === 'appointments' ? '#create' : route('clinic.index','appointments').'#create') }}" @if($section === 'dashboard') wire:navigate @endif><x-clinic.icon name="plus" />{{ $section === 'pets' ? 'Register pet' : 'Book appointment' }}</a>@elseif(in_array($section,['invoices','reports']))<button type="button" class="secondary" wire:click="printReport" wire:loading.attr="disabled" wire:target="printReport">Print report</button>@endif</div>
+<div class="title-row"><div><div class="eyebrow">{{ now()->format('l, F j, Y') }}</div><h1>{{ $section === 'dashboard' ? 'Hello, '.strtok(auth()->user()->name, ' ').'.' : $links[$section] }}</h1><p class="title-subtitle">{{ $navigation->description($section, $role) }}</p></div>@if(in_array($role,['admin','owner']) && in_array($section,['dashboard','appointments','pets']))<a class="button btn btn-primary" href="{{ $section === 'pets' ? '#create' : ($section === 'appointments' ? '#create' : route('clinic.index','appointments').'#create') }}" @if($section === 'dashboard') wire:navigate @endif><x-clinic.icon name="plus" />{{ $section === 'pets' ? 'Register pet' : 'Book appointment' }}</a>@elseif(in_array($section,['invoices','reports']))<button type="button" class="secondary" wire:click="printReport" wire:loading.attr="disabled" wire:target="printReport">Print report</button>@endif</div>
 <div class="offline-banner" wire:offline>You’re offline. Reconnect to save changes and refresh clinic information.</div>
 @if(session('success'))<div class="notice alert alert-success alert-dismissible" role="status">{{ session('success') }}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Dismiss notification"></button></div>@endif
 @if($errors->any())<div class="notice error alert alert-danger" role="alert"><strong>Please review these details:</strong>@foreach($errors->all() as $error)<div>{{ $error }}</div>@endforeach</div>@endif

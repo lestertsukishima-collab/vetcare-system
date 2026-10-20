@@ -2,6 +2,14 @@
 
 The clinic workspace uses a shared sage and forest palette, self-hosted Instrument Sans fonts, responsive navigation, patient cards, and light/dark themes. The welcome page and authentication screens use the same visual direction. Account settings retain the existing Flux components with the updated brand and accent colors.
 
+## Navigation and daily workflows
+
+The shared `ClinicNavigation` presenter groups pages into Workspace, Patient care (My care for owners), Clinic management, Billing, and Administration as each role permits. The sidebar, quick navigation, page titles, and section guidance share the same page definitions. The three existing roles and backend permissions are preserved.
+
+The overview opens with care alerts and three role-specific actions: owners can add pets, book visits, and open medical history; veterinarians can review today's visits, record an examination, and check vaccinations; administrators can review today's schedule, register an owner, and record a payment. The seven-day schedule links directly to filtered appointments. Promotional dashboard and sidebar panels are removed to give these tasks more space.
+
+Content uses the existing soft sage palette, rounded cards, and simple icons with larger reading text, visible keyboard focus, and 44-pixel action controls. Bootstrap grids stack the quick actions on narrow screens; existing mobile navigation, scrolling tables, six-record pagination, and light/dark themes remain available.
+
 ## Bootstrap integration
 
 Bootstrap 5.3.8 is installed through npm with Popper and Sass. Vite builds `resources/scss/clinic-bootstrap.scss` and `resources/js/clinic-bootstrap.js`; the workspace loads these assets locally. Run `npm install` and `npm run build` when deploying or changing the assets.
@@ -35,6 +43,10 @@ Use **Ctrl K** (or **Command K**) to open quick navigation. Type a page name, us
 The theme button stores its choice locally and shares the Flux appearance preference used by account settings. Save confirmations can be dismissed. Dashboard care reminders remain visible while their underlying conditions apply.
 
 ## Assets and verification
+
+The local Herd site uses **https://vetcare-system.test**. Enable its trusted local certificate with `herd secure vetcare-system`, set `APP_URL=https://vetcare-system.test` and `SESSION_SECURE_COOKIE=true` in `.env`, and run `php artisan config:clear`. Herd handles TLS and redirects HTTP to HTTPS; Laravel generates secure links and sends the session cookie only over HTTPS. Keep `SESSION_DOMAIN=null` so cookies remain scoped to this host.
+
+The Laravel Vite plugin automatically uses this site's Herd certificate when starting the development server. Restart an already-running server after securing the site; in PowerShell use `npm.cmd run dev`. Built assets work without the development server. This certificate secures the local `.test` site on this computer; a public deployment needs its own domain and certificate.
 
 Clinic styles are in `public/clinic.css` and `public/clinic-responsive.css`; JavaScript is in `public/clinic.js`. All use cache-busted URLs. The authentication and settings styles use the existing Vite build. Font assets are local under `public/fonts`.
 

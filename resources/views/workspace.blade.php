@@ -1,9 +1,14 @@
+@php
+    $role = auth()->user()->role;
+    $navigation = app(\App\Support\ClinicNavigation::class);
+    $links = $navigation->links($role);
+@endphp
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="theme-color" content="#244e43">
-    <title>{{ ucfirst($section) }} · VetCare</title>
+    <title>{{ $links[$section] }} · VetCare</title>
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
     @vite(['resources/scss/clinic-bootstrap.scss', 'resources/js/clinic-bootstrap.js'])
     @include('partials.profile-photo-styles')
@@ -15,27 +20,22 @@
     @include('partials.email-verification')
 </head>
 <body class="vetcare-bootstrap">
-@php
-    $role = auth()->user()->role;
-    $links = ['dashboard'=>'Overview','pets'=>$role === 'owner' ? 'My pets' : 'Patients','appointments'=>'Appointments','records'=>'Medical records','prescriptions'=>'Prescriptions','vaccinations'=>'Vaccinations'];
-    if (in_array($role,['owner','admin'])) $links['invoices'] = 'Invoices';
-    if ($role === 'admin') $links += ['owners'=>'Pet owners','veterinarians'=>'Veterinarians','services'=>'Services','inventory'=>'Medicine inventory','transactions'=>'Stock history','payments'=>'Payments','users'=>'Users','reports'=>'Reports','settings'=>'Clinic settings'];
-@endphp
-
 <a href="#main-content" class="skip-link">Skip to content</a>
 <button type="button" class="nav-backdrop" aria-label="Close navigation" data-nav-close></button>
 <aside class="sidebar" id="clinic-navigation" aria-label="Main navigation">
     <div class="mobile-nav-heading"><span>Navigation</span><button type="button" class="icon-button" data-nav-close aria-label="Close navigation"><x-clinic.icon name="close" /></button></div>
     <a class="brand" href="{{ route('dashboard') }}" wire:navigate><span class="brand-mark"><x-clinic.icon name="pets" /></span><span>VetCare<span class="brand-period">.</span><small>THE CARE WORKSPACE</small></span></a>
     <div class="workspace-label"><span class="status-dot"></span>{{ $role === 'owner' ? 'Pet owner' : ucfirst($role) }} workspace</div>
-    <nav class="main-nav">
-        <div class="nav-group-label">Care management</div>
-        @foreach($links as $key => $label)
-            @if($key === 'owners')<div class="nav-group-label">Practice management</div>@endif
-            <a class="{{ $section === $key ? 'active' : '' }}" href="{{ $key === 'dashboard' ? route('dashboard') : route('clinic.index',$key) }}" @if($section === $key) aria-current="page" @endif wire:navigate><x-clinic.icon :name="$key" /><span>{{ $label }}</span>@if($section === $key)<span class="active-indicator"></span>@endif</a>
+    <nav class="main-nav" aria-label="Workspace pages">
+        @foreach($navigation->groups($role) as $group => $pages)
+            <section class="nav-group" aria-label="{{ $group }}">
+                <h2 class="nav-group-label">{{ $group }}</h2>
+                @foreach($pages as $key => $label)
+                    <a class="{{ $section === $key ? 'active' : '' }}" href="{{ $key === 'dashboard' ? route('dashboard') : route('clinic.index', $key) }}" @if($section === $key) aria-current="page" @endif wire:navigate><x-clinic.icon :name="$key" /><span>{{ $label }}</span>@if($section === $key)<span class="active-indicator"></span>@endif</a>
+                @endforeach
+            </section>
         @endforeach
     </nav>
-    <div class="sidebar-note"><span class="note-icon"><x-clinic.icon name="heart" /></span><strong>A little care.<br>A lifetime of difference.</strong><span>Every companion matters.</span></div>
     {{-- Account settings use the Flux layout; a full load keeps the two layouts' styles separate. --}}
     <a class="sidebar-account" href="{{ route('profile.edit') }}"><x-clinic.icon name="settings" /> Account settings <x-clinic.icon name="arrow" /></a>
 </aside>
